@@ -1,0 +1,596 @@
+// ==============================================================================
+// DISISTA CONTROL — Normalized Relational Database Schema
+// Database Engine: MySQL 8.x
+// ORM: Prisma
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------------------
+// 1. AUTHENTICATION & RBAC
+// ------------------------------------------------------------------------------
+
+enum RoleType {
+  CONTROL_ROOM
+  WAREHOUSE_MANAGER
+  FIELD_DRIVER
+}
+
+model Role {
+  id          String    @id @default(uuid())
+  code        RoleType  @unique
+  name        String
+  description String?
+  users       User[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  operatorId          String               @unique @map("operator_id")
+  name                String
+  passwordHash        String               @map("password_hash")
+  roleId              String               @map("role_id")
+  role                Role                 @relation(fields: [roleId], references: [id])
+  pincode             String               @default("248001")
+  district            String               @default("Dehradun - Rishikesh Disaster Division")
+  state               String               @default("Uttarakhand")
+  isActive            Boolean              @default(true) @map("is_active")
+  assignedWarehouseId String?              @map("assigned_warehouse_id")
+  assignedWarehouse   Warehouse?           @relation(fields: [assignedWarehouseId], references: [id])
+  convoys             Convoy[]             @relation("DriverConvoys")
+  hazardReports       HazardReport[]
+  fieldReports        FieldReport[]
+  alertAcks           AlertAcknowledgement[]
+  auditLogs           AuditLog[]
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+
+  @@index([operatorId])
+  @@index([roleId])
+  @@map("users")
+}
+
+// ------------------------------------------------------------------------------
+// 2. WAREHOUSES & ATOMIC INVENTORY
+// ------------------------------------------------------------------------------
+
+model Warehouse {
+  id              String               @id @default(uuid())
+  code            String               @unique // e.g. WH-001
+  name            String
+  locationName    String               @map("location_name")
+  latitude        Float
+  longitude       Float
+  pincode         String               @default("248001")
+  capacityUnits   Int                  @default(50000) @map("capacity_units")
+  status          String               @default("operational") // operational, overloaded, restricted
+  users           User[]
+  inventory       InventoryItem[]
+  transactions    InventoryTransaction[]
+  outgoingSwaps   SupplySwapRequest[]  @relation("SourceWarehouse")
+  incomingSwaps   SupplySwapRequest[]  @relation("DestWarehouse")
+  originConvoys   Convoy[]             @relation("SourceWarehouseConvoys")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  @@map("warehouses")
+}
+
+model Supply {
+  id                String               @id @default(uuid())
+  code              String               @unique // e.g. ITEM-INS, ITEM-WTR
+  name              String
+  category          String               // medical, water, nutrition, trauma, shelter
+  unit              String               // vials, packs, liters, kits
+  isColdChain       Boolean              @default(false) @map("is_cold_chain")
+  targetTempCelsius Float?               @map("target_temp_celsius")
+  description       String?
+  inventoryItems    InventoryItem[]
+  shelterDemands    ShelterDemand[]
+  swapItems         SupplySwapItem[]
+  convoyItems       ConvoyItem[]
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+
+  @@map("supplies")
+}
+
+enum InventoryHealth {
+  SAFE
+  LOW
+  CRITICAL
+  OUT_OF_STOCK
+}
+
+model InventoryItem {
+  id                String               @id @default(uuid())
+  warehouseId       String               @map("warehouse_id")
+  warehouse         Warehouse            @relation(fields: [warehouseId], references: [id])
+  supplyId          String               @map("supply_id")
+  supply            Supply               @relation(fields: [supplyId], references: [id])
+  quantityOnHand    Int                  @default(0) @map("quantity_on_hand")
+  quantityReserved  Int                  @default(0) @map("quantity_reserved")
+  quantityAvailable Int                  @default(0) @map("quantity_available") // Enforced = on_hand - reserved >= 0
+  criticalThreshold Int                  @default(100) @map("critical_threshold")
+  minThreshold      Int                  @default(250) @map("min_threshold")
+  maxCapacity       Int                  @default(10000) @map("max_capacity")
+  healthStatus      InventoryHealth      @default(SAFE) @map("health_status")
+  currentTemp       Float?               @map("current_temp")
+  batchNumber       String?              @map("batch_number")
+  transactions      InventoryTransaction[]
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+
+  @@unique([warehouseId, supplyId])
+  @@index([warehouseId, healthStatus])
+  @@map("inventory_items")
+}
+
+enum TransactionType {
+  RECEIVE
+  ADJUST_UP
+  ADJUST_DOWN
+  RESERVE
+  RELEASE_RESERVATION
+  DISPATCH
+  TRANSFER_IN
+}
+
+model InventoryTransaction {
+  id              String          @id @default(uuid())
+  warehouseId     String          @map("warehouse_id")
+  warehouse       Warehouse       @relation(fields: [warehouseId], references: [id])
+  inventoryItemId String          @map("inventory_item_id")
+  inventoryItem   InventoryItem   @relation(fields: [inventoryItemId], references: [id])
+  type            TransactionType
+  quantityDelta   Int             @map("quantity_delta")
+  quantityOnHandAfter Int         @map("quantity_on_hand_after")
+  quantityReservedAfter Int       @map("quantity_reserved_after")
+  quantityAvailableAfter Int      @map("quantity_available_after")
+  referenceId     String?         @map("reference_id") // Swap ID, Convoy ID, etc.
+  reason          String
+  performedBy     String?         @map("performed_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([warehouseId, createdAt])
+  @@map("inventory_transactions")
+}
+
+// ------------------------------------------------------------------------------
+// 3. SHELTERS & DEMAND ENGINE
+// ------------------------------------------------------------------------------
+
+enum ShelterUrgency {
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+model Shelter {
+  id              String          @id @default(uuid())
+  code            String          @unique // e.g. S-012
+  name            String
+  locationName    String          @map("location_name")
+  latitude        Float
+  longitude       Float
+  pincode         String          @default("248001")
+  population      Int             @default(0)
+  maxCapacity     Int             @default(1500) @map("max_capacity")
+  isIsolated      Boolean         @default(false) @map("is_isolated")
+  isolationReason String?         @map("isolation_reason")
+  daysOfCover     Float           @default(3.0) @map("days_of_cover")
+  urgency         ShelterUrgency  @default(NORMAL)
+  demands         ShelterDemand[]
+  destConvoys     Convoy[]        @relation("DestShelterConvoys")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@index([urgency])
+  @@map("shelters")
+}
+
+model ShelterDemand {
+  id              String          @id @default(uuid())
+  shelterId       String          @map("shelter_id")
+  shelter         Shelter         @relation(fields: [shelterId], references: [id])
+  supplyId        String          @map("supply_id")
+  supply          Supply          @relation(fields: [supplyId], references: [id])
+  requiredDaily   Int             @map("required_daily")
+  availableUnits  Int             @map("available_units")
+  deficitUnits    Int             @default(0) @map("deficit_units") // Enforced = required - available
+  daysRemaining   Float           @default(0.0) @map("days_remaining")
+  urgency         ShelterUrgency  @default(NORMAL)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@unique([shelterId, supplyId])
+  @@index([urgency])
+  @@map("shelter_demands")
+}
+
+// ------------------------------------------------------------------------------
+// 4. DYNAMIC HAZARD SYSTEM
+// ------------------------------------------------------------------------------
+
+enum HazardType {
+  FLASH_FLOOD
+  LANDSLIDE
+  DAMAGED_BRIDGE
+  DEBRIS_FLOW
+  SUBMERGED_ROAD
+  ROAD_COLLAPSE
+  OTHER
+}
+
+enum HazardSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum HazardStatus {
+  REPORTED
+  UNDER_REVIEW
+  VERIFIED
+  ACTIVE
+  RESOLVED
+  REJECTED
+}
+
+model Hazard {
+  id              String          @id @default(uuid())
+  code            String          @unique // e.g. HAZ-001
+  type            HazardType
+  typeName        String          @map("type_name")
+  severity        HazardSeverity  @default(HIGH)
+  status          HazardStatus    @default(ACTIVE)
+  locationName    String          @map("location_name")
+  latitude        Float
+  longitude       Float
+  description     String          @db.Text
+  roadClosure     Boolean         @default(true) @map("road_closure")
+  bypassAvailable Boolean         @default(false) @map("bypass_available")
+  bypassRouteName String?         @map("bypass_route_name")
+  reportedBy      String          @map("reported_by")
+  verifiedAt      DateTime?       @map("verified_at")
+  resolvedAt      DateTime?       @map("resolved_at")
+  reports         HazardReport[]
+  alerts          Alert[]
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@index([status, severity])
+  @@index([latitude, longitude])
+  @@map("hazards")
+}
+
+model HazardReport {
+  id              String          @id @default(uuid())
+  hazardId        String?         @map("hazard_id")
+  hazard          Hazard?         @relation(fields: [hazardId], references: [id])
+  userId          String          @map("user_id")
+  user            User            @relation(fields: [userId], references: [id])
+  type            HazardType
+  latitude        Float
+  longitude       Float
+  locationName    String          @map("location_name")
+  description     String          @db.Text
+  photoStorageKey String?         @map("photo_storage_key")
+  clientTimestamp DateTime?       @map("client_timestamp")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@map("hazard_reports")
+}
+
+// ------------------------------------------------------------------------------
+// 5. CONVOYS, FLEET & ROUTING
+// ------------------------------------------------------------------------------
+
+enum ConvoyStatus {
+  PLANNED
+  DISPATCHED
+  ACKNOWLEDGED
+  EN_ROUTE
+  DELAYED
+  REROUTING
+  STOPPED
+  ARRIVED
+  DELIVERED
+  CANCELLED
+}
+
+enum ConvoyPriority {
+  ROUTINE
+  HIGH
+  CRITICAL
+}
+
+model Convoy {
+  id                  String               @id @default(uuid())
+  code                String               @unique // e.g. C-014
+  vehicleNo           String               @map("vehicle_no") // UK-07-GA-4892
+  vehicleType         String               @default("4x4 Heavy Logistics Truck") @map("vehicle_type")
+  driverId            String               @map("driver_id")
+  driver              User                 @relation("DriverConvoys", fields: [driverId], references: [id])
+  driverPhone         String               @default("+91 98450 12345") @map("driver_phone")
+  sourceWarehouseId   String               @map("source_warehouse_id")
+  sourceWarehouse     Warehouse            @relation("SourceWarehouseConvoys", fields: [sourceWarehouseId], references: [id])
+  destinationType     String               @default("shelter") @map("destination_type") // shelter, warehouse
+  destShelterId       String?              @map("dest_shelter_id")
+  destShelter         Shelter?             @relation("DestShelterConvoys", fields: [destShelterId], references: [id])
+  destName            String               @map("dest_name")
+  status              ConvoyStatus         @default(DISPATCHED)
+  priority            ConvoyPriority       @default(CRITICAL)
+  currentLat          Float                @map("current_lat")
+  currentLng          Float                @map("current_lng")
+  coldChainTemp       Float?               @map("cold_chain_temp")
+  coldChainViable     Boolean              @default(true) @map("cold_chain_viable")
+  etaMinutes          Int                  @default(35) @map("eta_minutes")
+  actualDeparture     DateTime?            @map("actual_departure")
+  actualArrival       DateTime?            @map("actual_arrival")
+  swapRequestId       String?              @map("swap_request_id")
+  swapRequest         SupplySwapRequest?   @relation(fields: [swapRequestId], references: [id])
+  items               ConvoyItem[]
+  statusHistory       ConvoyStatusHistory[]
+  routes              Route[]
+  fieldReports        FieldReport[]
+  alerts              Alert[]
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([driverId, status])
+  @@map("convoys")
+}
+
+model ConvoyItem {
+  id              String          @id @default(uuid())
+  convoyId        String          @map("convoy_id")
+  convoy          Convoy          @relation(fields: [convoyId], references: [id])
+  supplyId        String          @map("supply_id")
+  supply          Supply          @relation(fields: [supplyId], references: [id])
+  quantity        Int
+  unit            String
+  tempMonitored   Boolean         @default(false) @map("temp_monitored")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@map("convoy_items")
+}
+
+model ConvoyStatusHistory {
+  id              String          @id @default(uuid())
+  convoyId        String          @map("convoy_id")
+  convoy          Convoy          @relation(fields: [convoyId], references: [id])
+  status          ConvoyStatus
+  latitude        Float
+  longitude       Float
+  notes           String?
+  updatedBy       String          @map("updated_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([convoyId, createdAt])
+  @@map("convoy_status_histories")
+}
+
+enum RouteStatus {
+  VALID
+  CAUTION
+  BLOCKED
+  STALE
+  REQUIRES_RECALCULATION
+}
+
+model Route {
+  id                String          @id @default(uuid())
+  convoyId          String?         @map("convoy_id")
+  convoy            Convoy?         @relation(fields: [convoyId], references: [id])
+  provider          String          @default("TOMTOM") // TOMTOM, INTERNAL
+  originLat         Float           @map("origin_lat")
+  originLng         Float           @map("origin_lng")
+  destLat           Float           @map("dest_lat")
+  destLng           Float           @map("dest_lng")
+  distanceKm        Float           @map("distance_km")
+  durationMinutes   Int             @map("duration_minutes")
+  riskScore         Int             @default(15) @map("risk_score") // 0 - 100
+  routeStatus       RouteStatus     @default(VALID) @map("route_status")
+  polylineGeoJson   String          @db.LongText @map("polyline_geojson")
+  calculatedAt      DateTime        @default(now()) @map("calculated_at")
+  expiresAt         DateTime?       @map("expires_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@map("routes")
+}
+
+// ------------------------------------------------------------------------------
+// 6. SUPPLY SWAP REBALANCING WORKFLOW
+// ------------------------------------------------------------------------------
+
+enum SwapStatus {
+  DRAFT
+  OFFERED
+  REQUESTED
+  PENDING_APPROVAL
+  APPROVED
+  RESERVED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  REJECTED
+}
+
+model SupplySwapRequest {
+  id                  String            @id @default(uuid())
+  code                String            @unique // e.g. SWAP-801
+  fromWarehouseId     String            @map("from_warehouse_id")
+  fromWarehouse       Warehouse         @relation("SourceWarehouse", fields: [fromWarehouseId], references: [id])
+  toWarehouseId       String            @map("to_warehouse_id")
+  toWarehouse         Warehouse         @relation("DestWarehouse", fields: [toWarehouseId], references: [id])
+  status              SwapStatus        @default(PENDING_APPROVAL)
+  reason              String            @db.Text
+  approvedBy          String?           @map("approved_by")
+  approvedAt          DateTime?         @map("approved_at")
+  deliveredAt         DateTime?         @map("delivered_at")
+  progressPct         Int               @default(0) @map("progress_pct")
+  convoys             Convoy[]
+  items               SupplySwapItem[]
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([fromWarehouseId])
+  @@index([toWarehouseId])
+  @@map("supply_swap_requests")
+}
+
+model SupplySwapItem {
+  id              String            @id @default(uuid())
+  swapRequestId   String            @map("swap_request_id")
+  swapRequest     SupplySwapRequest @relation(fields: [swapRequestId], references: [id])
+  supplyId        String            @map("supply_id")
+  supply          Supply            @relation(fields: [supplyId], references: [id])
+  quantity        Int
+  unit            String
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  @@map("supply_swap_items")
+}
+
+// ------------------------------------------------------------------------------
+// 7. ALERTS & INCIDENT TRIAGE
+// ------------------------------------------------------------------------------
+
+enum AlertSeverity {
+  INFO
+  CAUTION
+  CRITICAL
+}
+
+enum AlertStatus {
+  NEW
+  ACKNOWLEDGED
+  ESCALATED
+  RESOLVED
+  DISMISSED
+}
+
+model Alert {
+  id                  String                 @id @default(uuid())
+  code                String                 @unique // e.g. ALT-901
+  severity            AlertSeverity          @default(CRITICAL)
+  status              AlertStatus            @default(NEW)
+  title               String
+  details             String                 @db.Text
+  source              String                 // Cold-Chain Sensor, Bridge 7 Gauge, Shelter S-012
+  sourceType          String?                @map("source_type") // hazard, convoy, shelter, inventory
+  hazardId            String?                @map("hazard_id")
+  hazard              Hazard?                @relation(fields: [hazardId], references: [id])
+  convoyId            String?                @map("convoy_id")
+  convoy              Convoy?                @relation(fields: [convoyId], references: [id])
+  acknowledged        Boolean                @default(false)
+  escalated           Boolean                @default(false)
+  escalatedToHqAt     DateTime?              @map("escalated_to_hq_at")
+  acknowledgements    AlertAcknowledgement[]
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
+
+  @@index([status, severity])
+  @@index([createdAt])
+  @@map("alerts")
+}
+
+model AlertAcknowledgement {
+  id              String          @id @default(uuid())
+  alertId         String          @map("alert_id")
+  alert           Alert           @relation(fields: [alertId], references: [id])
+  userId          String          @map("user_id")
+  user            User            @relation(fields: [userId], references: [id])
+  action          String          @default("ACKNOWLEDGE") // ACKNOWLEDGE, ESCALATE, RESOLVE
+  comment         String?
+  acknowledgedAt  DateTime        @default(now()) @map("acknowledged_at")
+
+  @@index([alertId])
+  @@map("alert_acknowledgements")
+}
+
+// ------------------------------------------------------------------------------
+// 8. FIELD MODE & OFFLINE RESILIENT SYNCHRONIZATION
+// ------------------------------------------------------------------------------
+
+model FieldReport {
+  id                  String          @id @default(uuid())
+  driverId            String          @map("driver_id")
+  driver              User            @relation(fields: [driverId], references: [id])
+  convoyId            String?         @map("convoy_id")
+  convoy              Convoy?         @relation(fields: [convoyId], references: [id])
+  reportType          String          @map("report_type") // road_block, flood_surge, delivery_complete
+  latitude            Float
+  longitude           Float
+  description         String          @db.Text
+  photoStorageKey     String?         @map("photo_storage_key")
+  clientEventId       String?         @unique @map("client_event_id")
+  clientTimestamp     DateTime?       @map("client_timestamp")
+  offlineCreated      Boolean         @default(false) @map("offline_created")
+  syncStatus          String          @default("APPLIED") @map("sync_status")
+  createdAt           DateTime        @default(now()) @map("created_at")
+
+  @@map("field_reports")
+}
+
+model OfflineSyncEvent {
+  id              String          @id @default(uuid())
+  clientEventId   String          @unique @map("client_event_id") // Unique constraint for idempotency
+  deviceId        String          @map("device_id")
+  operationType   String          @map("operation_type")
+  payloadJson     String          @db.Text @map("payload_json")
+  status          String          @default("APPLIED") // APPLIED, DUPLICATE, CONFLICT, REJECTED
+  clientTimestamp DateTime        @map("client_timestamp")
+  serverTimestamp DateTime        @default(now()) @map("server_timestamp")
+
+  @@index([clientEventId])
+  @@map("offline_sync_events")
+}
+
+// ------------------------------------------------------------------------------
+// 9. AUDIT LOGS & SETTINGS
+// ------------------------------------------------------------------------------
+
+model AuditLog {
+  id              String          @id @default(uuid())
+  userId          String?         @map("user_id")
+  user            User?           @relation(fields: [userId], references: [id])
+  action          String          // LOGIN, STOCK_ADJUST, SWAP_APPROVE, CONVOY_DISPATCH, HAZARD_VERIFY
+  entityType      String          @map("entity_type")
+  entityId        String          @map("entity_id")
+  oldValueJson    String?         @db.Text @map("old_value_json")
+  newValueJson    String?         @db.Text @map("new_value_json")
+  ipAddress       String?         @map("ip_address")
+  userAgent       String?         @map("user_agent")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id              String          @id @default(uuid())
+  key             String          @unique
+  value           String          @db.Text
+  description     String?
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
