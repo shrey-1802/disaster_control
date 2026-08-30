@@ -1,18 +1,20 @@
 import { PrismaClient } from '@prisma/client';
 import { env } from './env.js';
 
-declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
-}
+// Clean globalThis singleton pattern for TypeScript NodeNext ESM
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
-export const prisma = global.prisma || new PrismaClient({
-  log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
-  errorFormat: 'minimal'
-});
+export const prisma: PrismaClient =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
+    errorFormat: 'minimal'
+  });
 
 if (env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
+  globalForPrisma.prisma = prisma;
 }
 
 export async function connectDatabase(): Promise<void> {
@@ -20,8 +22,8 @@ export async function connectDatabase(): Promise<void> {
     await prisma.$connect();
     console.log('✅ Connected to MySQL Database successfully via Prisma');
   } catch (error) {
-    console.error('❌ Failed to connect to MySQL database:', error);
-    // In dev mode, don't crash process immediately if DB is booting
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.warn(`⚠️ MySQL Database notice: ${errorMsg}`);
     if (env.NODE_ENV === 'production') {
       process.exit(1);
     }
