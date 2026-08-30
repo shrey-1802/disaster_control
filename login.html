@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Role Access — DISISTA CONTROL</title>
+  <meta name="description" content="Role-based authenticated access for disaster relief operations and convoy coordination.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <!-- Main Branding -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <div class="brand-logo" style="width:44px;height:44px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#fff;">DISISTA CONTROL</div>
+          <div style="font-size:11px;font-weight:700;color:var(--violet-500);text-transform:uppercase;letter-spacing:0.08em;">Disaster Operations Command</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <h1 style="font-size:17px;font-weight:700;color:#fff;margin-bottom:4px;">Operational Authentication</h1>
+        <p style="font-size:13px;color:var(--text-secondary-dark);">
+          Enter operator credentials and Indian district PIN code to synchronize sector telemetry.
+        </p>
+      </div>
+
+      <!-- Formal Login Form -->
+      <form id="formal-login-form" onsubmit="handleFormalLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="login-role">Assigned Operational Role</label>
+          <select id="login-role" class="form-control" required>
+            <option value="control_room">1. Control Room Commander (HQ)</option>
+            <option value="district_admin">2. District Disaster Admin</option>
+            <option value="warehouse_manager">3. Warehouse Logistics Manager</option>
+            <option value="field_driver">4. Relief Convoy Field Driver</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-operator-id">Operator ID / Badge No.</label>
+          <input type="text" id="login-operator-id" class="form-control" placeholder="e.g. HQ-CMD-001 or DRV-401" value="HQ-CMD-001" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-pincode">Sector PIN Code (India)</label>
+          <input type="text" id="login-pincode" class="form-control" placeholder="6-digit Indian PIN (e.g. 248001)" value="248001" maxlength="6" required oninput="previewDistrictLookup(this.value)">
+          <div id="pincode-preview" style="font-size:11.5px;color:var(--status-safe);margin-top:4px;">
+            📍 Resolved: Dehradun - Rishikesh Disaster Division (Uttarakhand)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-passcode">Security Passcode / OTP</label>
+          <input type="password" id="login-passcode" class="form-control" placeholder="••••••••" value="disaster2026" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:10px;">
+          Authenticate & Enter Portal →
+        </button>
+      </form>
+
+      <!-- §4: Curved Tab Sliding Reveal for Quick Demo Login -->
+      <div id="demo-sheet" class="demo-reveal-sheet">
+        <div class="demo-reveal-indicator"></div>
+        <div class="demo-reveal-tab-handle" onclick="toggleDemoSheet()">
+          <span>⚡ Quick Demo — One-Click Login</span>
+          <span id="demo-chevron" style="font-size:10px;">▲</span>
+        </div>
+
+        <p style="font-size:11.5px;color:var(--text-secondary-light);margin-bottom:12px;text-align:center;">
+          Instant pre-configured access for evaluation & deployment review:
+        </p>
+
+        <div class="demo-role-grid">
+          <button class="demo-role-btn" onclick="demoLogin('control_room')">
+            <span class="demo-role-title">🎯 Control Room</span>
+            <span class="demo-role-desc">Full central command & rerouting</span>
+          </button>
+          
+          <button class="demo-role-btn" onclick="demoLogin('district_admin')">
+            <span class="demo-role-title">🏛️ District Admin</span>
+            <span class="demo-role-desc">District oversight & hazard verify</span>
+          </button>
+
+          <button class="demo-role-btn" onclick="demoLogin('warehouse_manager')">
+            <span class="demo-role-title">📦 Warehouse Mgr</span>
+            <span class="demo-role-desc">Inventory (Avail/Rsv) & Swaps</span>
+          </button>
+
+          <button class="demo-role-btn" onclick="demoLogin('field_driver')">
+            <span class="demo-role-title">🚛 Field Driver</span>
+            <span class="demo-role-desc">Mission C-014, 1-tap hazard report</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let sheetExpanded = false;
+
+    function toggleDemoSheet() {
+      sheetExpanded = !sheetExpanded;
+      const sheet = document.getElementById('demo-sheet');
+      const chevron = document.getElementById('demo-chevron');
+      if (sheetExpanded) {
+        sheet.classList.add('expanded');
+        chevron.innerText = '▼';
+      } else {
+        sheet.classList.remove('expanded');
+        chevron.innerText = '▲';
+      }
+    }
+
+    function previewDistrictLookup(pin) {
+      const preview = document.getElementById('pincode-preview');
+      const sector = window.disasterStore.resolvePincode(pin);
+      if (sector) {
+        preview.innerHTML = `📍 Resolved: ${sector.district} (${sector.state})`;
+        preview.style.color = 'var(--status-safe)';
+      } else {
+        preview.innerHTML = `📍 Active Sector: Custom Grid (PIN ${pin})`;
+      }
+    }
+
+    function handleFormalLogin(e) {
+      e.preventDefault();
+      const role = document.getElementById('login-role').value;
+      const opId = document.getElementById('login-operator-id').value;
+      const pin = document.getElementById('login-pincode').value;
+
+      window.authManager.login(role, opId, pin);
+      window.location.href = "dashboard.html";
+    }
+
+    function demoLogin(roleId) {
+      window.authManager.quickDemoLogin(roleId);
+      window.location.href = "dashboard.html";
+    }
+  </script>
+</body>
+</html>

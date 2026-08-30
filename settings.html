@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Configuration & Settings — DISISTA CONTROL</title>
+  <meta name="description" content="System settings, field mode overrides, offline telemetry synchronization, and PIN code sector reassignment.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="navbar-mount" data-active="settings"></div>
+
+    <main class="main-content">
+      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <div class="page-header">
+        <div class="header-left">
+          <span class="section-eyebrow">PLATFORM CONFIGURATION</span>
+          <h1 class="page-title">System Settings & Field Telemetry Sync</h1>
+          <p class="page-description">
+            Manage operator credentials, active Indian disaster sector, offline field queues, and data synchronization.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="resetToDefaults()">
+            <span>↺ Reset Seed Data</span>
+          </button>
+          <button class="btn btn-primary" onclick="saveSettings()">
+            <span>💾 Save Preferences</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid-equal-2col">
+        <!-- Card 1: Operator & Role Profile -->
+        <div class="card-dark">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="section-eyebrow">OPERATOR PROFILE</span>
+              <div class="card-title">Active Session & Assigned Role</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="UI.openRoleSwitcherModal()">Switch Role</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Operator Full Name</label>
+            <input type="text" id="set-name" class="form-control" value="Commander A. Sharma">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Operator Badge ID</label>
+            <input type="text" id="set-opid" class="form-control" value="HQ-CMD-001" readonly style="opacity:0.8;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Active Role</label>
+            <input type="text" id="set-role" class="form-control" value="1. Control Room Commander (HQ)" readonly style="opacity:0.8;">
+          </div>
+        </div>
+
+        <!-- Card 2: Sector & Indian PIN Code Localization -->
+        <div class="card-dark">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="section-eyebrow">GEOGRAPHIC SECTOR</span>
+              <div class="card-title">Indian PIN Code & District Resolver</div>
+            </div>
+            <span class="status-pill safe">GPS Active</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Sector Postal PIN Code</label>
+            <input type="text" id="set-pincode" class="form-control" value="248001" maxlength="6" oninput="handlePinChange(this.value)">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Assigned Disaster Division</label>
+            <input type="text" id="set-district" class="form-control" value="Dehradun - Rishikesh Disaster Division" readonly style="opacity:0.8;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">State Emergency Grid</label>
+            <input type="text" id="set-state" class="form-control" value="Uttarakhand (Himalayan Corridor)" readonly style="opacity:0.8;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Offline Telemetry & Field Mode Queue (§1028-§1041) -->
+      <div class="card-dark" style="margin-top:var(--space-4);">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="section-eyebrow">RESILIENT TELEMETRY</span>
+            <div class="card-title">Field Driver Offline Sync Queue</div>
+          </div>
+          <button class="btn btn-safe btn-sm" onclick="syncOfflineQueueAction()">
+            <span>📡 Synchronize Queue Now</span>
+          </button>
+        </div>
+
+        <p style="font-size:13px;color:var(--text-secondary-dark);margin-bottom:14px;">
+          When mobile relief convoys lose 4G/satellite connectivity in mountain valleys, field reports are stored locally in IndexedDB/LocalStorage and automatically synchronized once connection returns.
+        </p>
+
+        <div id="sync-queue-status-box" style="padding:14px;background:#151029;border:1px solid var(--border-hairline);border-radius:10px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#fff;" id="sync-count-text">0 Pending Telemetry Packets</div>
+            <div style="font-size:12px;color:var(--status-safe);margin-top:2px;">Grid connection: Online (Ping: 18ms)</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="addSampleOfflineItem()">+ Simulate Offline Field Report</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSettingsData();
+    });
+
+    function loadSettingsData() {
+      const user = window.authManager.getCurrentUser();
+      const roleConfig = window.authManager.getRoleConfig();
+
+      document.getElementById('set-name').value = user.name;
+      document.getElementById('set-opid').value = user.operatorId;
+      document.getElementById('set-role').value = `${roleConfig.icon} ${roleConfig.title}`;
+      document.getElementById('set-pincode').value = user.pincode || "248001";
+      document.getElementById('set-district').value = user.district || "Dehradun Division";
+      document.getElementById('set-state').value = user.state || "Uttarakhand";
+
+      updateQueueCount();
+    }
+
+    function handlePinChange(pin) {
+      if (pin.length === 6) {
+        const sector = window.disasterStore.resolvePincode(pin);
+        document.getElementById('set-district').value = sector.district;
+        document.getElementById('set-state').value = sector.state;
+        window.UI.showToast(`Resolved Sector: ${sector.district}`, 'safe');
+      }
+    }
+
+    function updateQueueCount() {
+      const state = window.disasterStore.getState();
+      const count = state.offlineSyncQueue.length;
+      document.getElementById('sync-count-text').innerText = `${count} Pending Telemetry Packets in Queue`;
+    }
+
+    function addSampleOfflineItem() {
+      window.disasterStore.queueOfflineReport({
+        type: "Mountain Stream Overflow",
+        location: "Feeder Route KM 22",
+        severity: "critical",
+        description: "Recorded in dead zone. Culvert collapsed by rapid surge."
+      });
+      updateQueueCount();
+      window.UI.showToast("Offline report stored locally in device buffer.", "caution");
+    }
+
+    function syncOfflineQueueAction() {
+      const synced = window.disasterStore.syncOfflineQueue();
+      updateQueueCount();
+      if (synced > 0) {
+        window.UI.showToast(`Synchronized ${synced} field telemetry reports with central grid.`, 'safe');
+      } else {
+        window.UI.showToast("Queue is currently up to date.", 'info');
+      }
+    }
+
+    function saveSettings() {
+      const name = document.getElementById('set-name').value;
+      const pin = document.getElementById('set-pincode').value;
+      const district = document.getElementById('set-district').value;
+      const state = document.getElementById('set-state').value;
+
+      const user = window.authManager.getCurrentUser();
+      user.name = name;
+      user.pincode = pin;
+      user.district = district;
+      user.state = state;
+
+      window.authManager.saveSession(user);
+      window.UI.showToast("Platform configuration saved successfully.", "safe");
+    }
+
+    function resetToDefaults() {
+      if (confirm("Reset local disaster simulation database to original seed state?")) {
+        window.disasterStore.resetToDefault();
+        window.location.reload();
+      }
+    }
+  </script>
+</body>
+</html>

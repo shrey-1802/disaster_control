@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shelter Demand Board — DISISTA CONTROL</title>
+  <meta name="description" content="Shelter supply urgency, days-of-cover triage, and emergency supply requisition board.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="navbar-mount" data-active="shelter-board"></div>
+
+    <main class="main-content">
+      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <div class="page-header">
+        <div class="header-left">
+          <span class="section-eyebrow">RELIEF REQUISITION MATRIX</span>
+          <h1 class="page-title">Shelter Demand & Urgency Board</h1>
+          <p class="page-description">
+            Monitoring daily supply cover, critical medicine deficits, and route isolation for emergency relief camps.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="openRequestModal()">
+            <span>➕ Emergency Supply Requisition</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <div id="kpi-mount" class="grid-kpi-4"></div>
+
+      <!-- Main Shelters Grid -->
+      <div id="shelters-card-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(480px, 1fr));gap:var(--space-4);margin-top:var(--space-4);">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Requisition Modal -->
+  <div id="request-modal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🏠 Emergency Supply Requisition</div>
+        <button class="modal-close" onclick="closeRequestModal()">✕</button>
+      </div>
+      <form onsubmit="handleCreateRequisition(event)">
+        <div class="form-group">
+          <label class="form-label">Select Relief Shelter</label>
+          <select id="req-shelter" class="form-control" required>
+            <option value="S-012">Shelter S-012 (Ganga Valley High School)</option>
+            <option value="S-008">Shelter S-008 (Doon Community Complex)</option>
+            <option value="S-014">Shelter S-014 (Rajaji Buffer Camp)</option>
+            <option value="S-021">Shelter S-021 (Shivalik Relief Camp)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Critical Supply Needed</label>
+          <select id="req-item" class="form-control" required>
+            <option value="Insulin Vials (Cold Chain)">Insulin Vials (Cold Chain)</option>
+            <option value="O-Negative Blood Bags">O-Negative Blood Bags</option>
+            <option value="Potable Water Purifiers (10L)">Potable Water Purifiers (10L)</option>
+            <option value="Infant Nutrition Powder">Infant Nutrition Powder</option>
+            <option value="Trauma Surgical Kits">Trauma Surgical Kits</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Required Quantity</label>
+          <input type="number" id="req-qty" class="form-control" value="200" min="1" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Urgency Tier</label>
+          <select id="req-urgency" class="form-control" required>
+            <option value="critical">🔴 Critical (Under 24 Hours Remaining)</option>
+            <option value="caution">🟠 Caution (1 - 3 Days Remaining)</option>
+            <option value="safe">🟢 Routine Restock (> 3 Days)</option>
+          </select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeRequestModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Emergency Request →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderKpis();
+      renderShelterBoard();
+    });
+
+    function renderKpis() {
+      const mount = document.getElementById('kpi-mount');
+      mount.innerHTML = `
+        ${window.UI.createKpiCard({ icon: "🏠", eyebrow: "TOTAL SHELTERS", value: "04 Camps", caption: "1,950 displaced individuals", accent: "violet" })}
+        ${window.UI.createKpiCard({ icon: "🚨", eyebrow: "CRITICAL DEFICIT", value: "02 Shelters", caption: "S-012 & S-014 under 1.5 days cover", accent: "critical" })}
+        ${window.UI.createKpiCard({ icon: "🚫", eyebrow: "ISOLATED CAMPS", value: "02 Isolated", caption: "No reliable road access currently", accent: "critical" })}
+        ${window.UI.createKpiCard({ icon: "🚛", eyebrow: "INBOUND CONVOYS", value: "03 Trucks", caption: "C-014, C-021, C-019 en route", accent: "safe" })}
+      `;
+    }
+
+    function renderShelterBoard() {
+      const grid = document.getElementById('shelters-card-grid');
+      const state = window.disasterStore.getState();
+
+      grid.innerHTML = state.shelters.map(sh => {
+        const isCrit = sh.status === 'critical';
+        const isIsolated = sh.isIsolated;
+
+        return `
+          <div class="card-dark" style="display:flex;flex-direction:column;justify-content:space-between;border-top:4px solid ${isCrit ? 'var(--status-critical)' : sh.status === 'caution' ? 'var(--status-caution)' : 'var(--status-safe)'};">
+            <div>
+              <div class="card-header" style="margin-bottom:12px;">
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:var(--violet-500);text-transform:uppercase;letter-spacing:0.06em;">
+                    ${sh.id} • ${sh.location}
+                  </div>
+                  <h3 class="card-title" style="font-size:17px;margin-top:2px;">${sh.name}</h3>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                  ${isIsolated ? `<span class="status-pill critical pulse-critical" style="font-weight:800;">🚫 ISOLATED ACCESS</span>` : ''}
+                  ${window.UI.createStatusPill(sh.status)}
+                </div>
+              </div>
+
+              <!-- Metrics Row -->
+              <div style="display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:10px;margin-bottom:16px;background:#151029;padding:12px;border-radius:10px;border:1px solid var(--border-hairline);">
+                <div>
+                  <div style="font-size:11px;color:var(--text-secondary-dark);text-transform:uppercase;">Days of Cover</div>
+                  <div style="font-size:20px;font-weight:800;color:${isCrit ? 'var(--status-critical)' : sh.daysOfCover < 2.5 ? 'var(--status-caution)' : 'var(--status-safe)'};">
+                    ${sh.daysOfCover} Days
+                  </div>
+                </div>
+
+                <div>
+                  <div style="font-size:11px;color:var(--text-secondary-dark);text-transform:uppercase;">Population</div>
+                  <div style="font-size:18px;font-weight:700;color:#fff;">
+                    ${sh.occupancy} <span style="font-size:12px;color:var(--text-secondary-dark);">/ ${sh.capacity}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="font-size:11px;color:var(--text-secondary-dark);text-transform:uppercase;margin-bottom:4px;">Supply Trend</div>
+                  <!-- SVG Sparkline (§3.5) -->
+                  ${window.UI.createSparkline(sh.sparklineData)}
+                </div>
+              </div>
+
+              <!-- Supply Demand Breakdown -->
+              <div style="margin-bottom:16px;">
+                <div style="font-size:12px;font-weight:700;color:var(--text-secondary-dark);text-transform:uppercase;margin-bottom:8px;">
+                  Essential Supply Deficit Breakdown
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  ${sh.needs.map(n => `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);border-radius:8px;">
+                      <div>
+                        <div style="font-size:13px;font-weight:600;color:#fff;">${n.item}</div>
+                        <div style="font-size:11px;color:var(--text-secondary-dark);">In Stock: ${n.currentStock} ${n.unit}</div>
+                      </div>
+                      <div style="text-align:right;">
+                        <span class="status-pill ${n.urgency}" style="font-size:11px;padding:3px 8px;">
+                          Need: ${n.qtyNeeded} ${n.unit}
+                        </span>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Inbound Convoy Status -->
+              ${sh.incomingConvoyId ? `
+                <div class="info-banner" style="margin-bottom:14px;background:rgba(139,108,246,0.08);border-left-color:var(--violet-500);">
+                  <span style="font-size:16px;">🚛</span>
+                  <div class="info-banner-text">
+                    <strong>Inbound Relief:</strong> Convoy <strong>${sh.incomingConvoyId}</strong> en route to this shelter.
+                  </div>
+                </div>
+              ` : `
+                <div class="info-banner" style="margin-bottom:14px;background:rgba(242,84,91,0.08);border-left-color:var(--status-critical);">
+                  <span style="font-size:16px;">⚠️</span>
+                  <div class="info-banner-text">
+                    <strong>No Active Convoy:</strong> Immediate dispatch required from Hub Alpha.
+                  </div>
+                </div>
+              `}
+            </div>
+
+            <!-- Card Action Footer -->
+            <div style="display:flex;gap:8px;margin-top:10px;padding-top:12px;border-top:1px solid var(--border-hairline);">
+              <button class="btn btn-primary btn-sm" style="flex:1;" onclick="window.location.href='supply-swap.html'">
+                🔄 Allocate via Swap
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="window.location.href='convoy-dispatch.html'">
+                🚛 Dispatch Truck
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openRequestModal() {
+      document.getElementById('request-modal').classList.add('open');
+    }
+    function closeRequestModal() {
+      document.getElementById('request-modal').classList.remove('open');
+    }
+
+    function handleCreateRequisition(e) {
+      e.preventDefault();
+      const shelterId = document.getElementById('req-shelter').value;
+      const item = document.getElementById('req-item').value;
+      const qty = parseInt(document.getElementById('req-qty').value, 10);
+      const urgency = document.getElementById('req-urgency').value;
+
+      const state = window.disasterStore.getState();
+      const shelter = state.shelters.find(s => s.id === shelterId);
+
+      if (shelter) {
+        shelter.needs.unshift({
+          item: item,
+          qtyNeeded: qty,
+          currentStock: 0,
+          unit: "Units",
+          urgency: urgency
+        });
+        if (urgency === 'critical') {
+          shelter.status = 'critical';
+        }
+        window.disasterStore.notify();
+      }
+
+      closeRequestModal();
+      window.UI.showToast(`Emergency requisition created for ${shelterId}.`, 'safe');
+      renderShelterBoard();
+      renderKpis();
+    }
+  </script>
+</body>
+</html>

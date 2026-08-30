@@ -1,0 +1,744 @@
+/**
+ * DISISTA CONTROL — UI Components
+ * Complete design system implementation fixing all prior visual flaws.
+ */
+
+/* ==========================================================================
+   1. STAT / KPI CARDS (Light Surface Pattern §1.2 & §3.3)
+   ========================================================================== */
+.kpi-card {
+  position: relative;
+  background-color: var(--surface-card-alt);
+  color: var(--text-primary-light);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-4);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-hairline-light);
+  border-left: 5px solid var(--violet-500);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 110px;
+  transition: transform var(--motion-base) var(--ease), box-shadow var(--motion-base) var(--ease);
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), var(--shadow-glow-violet);
+}
+
+.kpi-card.accent-critical {
+  border-left-color: var(--status-critical);
+}
+.kpi-card.accent-caution {
+  border-left-color: var(--status-caution);
+}
+.kpi-card.accent-safe {
+  border-left-color: var(--status-safe);
+}
+
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
+.kpi-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary-light);
+}
+
+.kpi-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.kpi-numeral {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary-light);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: var(--space-1) 0;
+}
+
+.kpi-caption {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary-light);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kpi-trend-up {
+  color: var(--status-critical);
+  font-weight: 700;
+}
+.kpi-trend-down {
+  color: var(--status-safe);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   2. DARK DETAIL CARDS (Content-Dense Surface §1.2)
+   ========================================================================== */
+.card-dark {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+  color: var(--text-primary-dark);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--motion-base) var(--ease), box-shadow var(--motion-base) var(--ease);
+}
+
+.card-dark:hover {
+  border-color: rgba(139, 108, 246, 0.4);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  gap: var(--space-3);
+}
+
+.card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-primary-dark);
+  letter-spacing: -0.01em;
+}
+
+.card-subtitle {
+  font-size: var(--text-xs);
+  color: var(--text-secondary-dark);
+}
+
+/* ==========================================================================
+   3. PILLS & STATUS BADGES (§3.1)
+   ========================================================================== */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.status-pill.safe {
+  background-color: var(--status-safe-pill-bg);
+  color: #065F46;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.status-pill.caution {
+  background-color: var(--status-caution-pill-bg);
+  color: #92400E;
+  border: 1px solid rgba(245, 166, 35, 0.4);
+}
+
+.status-pill.critical {
+  background-color: var(--status-critical-pill-bg);
+  color: #991B1B;
+  border: 1px solid rgba(242, 84, 91, 0.4);
+}
+
+.status-pill.info {
+  background-color: var(--status-info-pill-bg);
+  color: #1E40AF;
+  border: 1px solid rgba(78, 161, 247, 0.4);
+}
+
+.status-pill.active-violet {
+  background-color: var(--violet-500);
+  color: #FFFFFF;
+}
+
+.status-pill.passive-dark {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary-dark);
+  border: 1px solid var(--border-hairline);
+}
+
+.status-pill.pulse-critical {
+  animation: pulse-critical-glow 1.8s infinite;
+}
+
+@keyframes pulse-critical-glow {
+  0% { box-shadow: 0 0 0 0 rgba(242, 84, 91, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(242, 84, 91, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(242, 84, 91, 0); }
+}
+
+/* ==========================================================================
+   4. DATA BARS (Progress / Level / Risk Index §3.4)
+   ========================================================================== */
+.bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.bar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--text-secondary-dark);
+}
+
+.bar-title {
+  font-weight: 600;
+  color: var(--text-primary-dark);
+}
+
+.bar-track {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.bar-fill.fill-safe {
+  background: linear-gradient(90deg, #10B981, var(--status-safe));
+}
+
+.bar-fill.fill-caution {
+  background: linear-gradient(90deg, #D97706, var(--status-caution));
+}
+
+.bar-fill.fill-critical {
+  background: linear-gradient(90deg, #DC2626, var(--status-critical));
+}
+
+.bar-fill.fill-violet {
+  background: linear-gradient(90deg, #6D28D9, var(--violet-500));
+}
+
+.bar-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   5. SPARKLINES & HONEST EMPTY STATES (§3.5)
+   ========================================================================== */
+.sparkline-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100px;
+  height: 28px;
+}
+
+.sparkline-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sparkline-path {
+  fill: none;
+  stroke: var(--violet-500);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sparkline-empty {
+  font-size: 11px;
+  color: var(--text-muted-dark);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   6. INFO BANNERS (Non-severity notices §3.6)
+   ========================================================================== */
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-left: 4px solid var(--status-info);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-primary-dark);
+}
+
+.info-banner-icon {
+  font-size: 16px;
+  color: var(--status-info);
+  flex-shrink: 0;
+}
+
+.info-banner-text {
+  flex: 1;
+  color: var(--text-secondary-dark);
+}
+
+.info-banner-text strong {
+  color: var(--text-primary-dark);
+}
+
+/* ==========================================================================
+   7. BUTTONS & ACTIONS (§3.2)
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: all var(--motion-fast) var(--ease);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: var(--violet-500);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 10px rgba(139, 108, 246, 0.35);
+}
+
+.btn-primary:hover {
+  background-color: var(--violet-600);
+  box-shadow: 0 4px 16px rgba(139, 108, 246, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-primary-dark);
+  border: 1px solid var(--border-hairline);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: var(--violet-500);
+  color: #FFFFFF;
+}
+
+.btn-critical {
+  background-color: rgba(242, 84, 91, 0.15);
+  color: var(--status-critical);
+  border: 1px solid rgba(242, 84, 91, 0.5);
+}
+
+.btn-critical:hover {
+  background-color: var(--status-critical);
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(242, 84, 91, 0.4);
+}
+
+.btn-safe {
+  background-color: rgba(52, 211, 153, 0.15);
+  color: var(--status-safe);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+}
+
+.btn-safe:hover {
+  background-color: var(--status-safe);
+  color: #064E3B;
+  font-weight: 700;
+}
+
+.btn-sm {
+  padding: 5px 12px;
+  font-size: var(--text-xs);
+}
+
+.btn-lg {
+  padding: 12px 26px;
+  font-size: var(--text-base);
+  border-radius: 10px;
+}
+
+/* ==========================================================================
+   8. TABLES (§3.7)
+   ========================================================================== */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-hairline);
+  background: var(--surface-card);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-sm);
+}
+
+.data-table th {
+  background-color: #1A1435;
+  color: var(--text-secondary-dark);
+  font-weight: 600;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-hairline);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(53, 46, 86, 0.6);
+  color: var(--text-primary-dark);
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  transition: background-color var(--motion-fast) var(--ease);
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--surface-card-hover);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Feed Title Fix (§0.3 & §2) */
+.feed-item-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary-dark) !important;
+  margin-bottom: 3px;
+}
+
+.feed-item-meta {
+  font-size: var(--text-xs);
+  color: var(--text-secondary-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   9. FORMS & INPUTS
+   ========================================================================== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: var(--space-4);
+}
+
+.form-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-secondary-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: #151029;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary-dark);
+  font-size: var(--text-sm);
+  transition: all var(--motion-fast) var(--ease);
+}
+
+.form-control:focus {
+  border-color: var(--violet-500);
+  box-shadow: var(--shadow-glow-violet);
+  background-color: #1A1435;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted-dark);
+}
+
+select.form-control {
+  cursor: pointer;
+}
+
+select.form-control option {
+  background-color: #1E1839;
+  color: var(--text-primary-dark);
+}
+
+/* ==========================================================================
+   10. MODALS & POPUPS
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(9, 6, 20, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease);
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-box {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  max-width: 580px;
+  width: 100%;
+  padding: var(--space-5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  transform: scale(0.95);
+  transition: transform var(--motion-base) var(--ease);
+}
+
+.modal-backdrop.open .modal-box {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.modal-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary-dark);
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary-dark);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-hairline);
+}
+
+/* ==========================================================================
+   11. TOAST NOTIFICATIONS
+   ========================================================================== */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-dropdown);
+  color: var(--text-primary-dark);
+  font-size: var(--text-sm);
+  min-width: 320px;
+  max-width: 440px;
+  animation: slide-in-toast 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.toast.critical {
+  border-left: 4px solid var(--status-critical);
+}
+.toast.caution {
+  border-left: 4px solid var(--status-caution);
+}
+.toast.safe {
+  border-left: 4px solid var(--status-safe);
+}
+.toast.info {
+  border-left: 4px solid var(--status-info);
+}
+
+@keyframes slide-in-toast {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   12. LOGIN REVEAL BOTTOM SHEET (§4)
+   ========================================================================== */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 20%, #2A1F56 0%, #151029 70%);
+  padding: var(--space-4);
+  position: relative;
+}
+
+.login-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), var(--shadow-glow-violet);
+  padding: var(--space-6) var(--space-6) 65px var(--space-6);
+  overflow: hidden;
+}
+
+/* Sliding Reveal Panel */
+.demo-reveal-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 16px 24px 24px 24px;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.35);
+  transform: translateY(calc(100% - 46px));
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 50;
+}
+
+.demo-reveal-sheet.expanded {
+  transform: translateY(0);
+}
+
+.demo-reveal-tab-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  padding-bottom: 12px;
+  color: var(--text-primary-light);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+.demo-reveal-indicator {
+  width: 38px;
+  height: 4px;
+  background-color: #D1C9E8;
+  border-radius: 2px;
+  margin: 0 auto 10px auto;
+}
+
+.demo-role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.demo-role-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px;
+  background: #F4F1FD;
+  border: 1px solid var(--border-hairline-light);
+  border-radius: 12px;
+  color: var(--text-primary-light);
+  text-align: left;
+  transition: all var(--motion-fast) var(--ease);
+}
+
+.demo-role-btn:hover {
+  background: var(--violet-100);
+  border-color: var(--violet-500);
+  transform: translateY(-2px);
+}
+
+.demo-role-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--violet-700);
+}
+
+.demo-role-desc {
+  font-size: 10.5px;
+  color: var(--text-secondary-light);
+  line-height: 1.3;
+  margin-top: 2px;
+}

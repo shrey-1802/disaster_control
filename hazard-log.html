@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hazard Verification Log — DISISTA CONTROL</title>
+  <meta name="description" content="Real-time disaster hazard reporting, flood monitoring, and road closure verification log.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="navbar-mount" data-active="hazard-log"></div>
+
+    <main class="main-content">
+      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <div class="page-header">
+        <div class="header-left">
+          <span class="section-eyebrow">GEOTECHNICAL & ROUTE HAZARDS</span>
+          <h1 class="page-title">Hazard Log & Field Verification Feed</h1>
+          <p class="page-description">
+            Telemetry from seismic sensors, hydrological river probes, and field drivers reporting impassable routes.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-critical" onclick="openReportHazardModal()">
+            <span>⚠️ Report Field Hazard</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <div id="kpi-mount" class="grid-kpi-4"></div>
+
+      <!-- Hazard Feed & Verification Container -->
+      <div class="card-dark" style="margin-top:var(--space-4);">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="section-eyebrow">FIELD OBSERVATION FEED</span>
+            <div class="card-title">Real-Time Hazard Incident Stream</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <select class="form-control" style="width:160px;padding:6px 10px;font-size:12px;" onchange="filterHazards(this.value)">
+              <option value="all">All Severities</option>
+              <option value="critical">Critical Only</option>
+              <option value="high">High Severity</option>
+              <option value="medium">Medium Severity</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="hazard-feed-container" style="display:flex;flex-direction:column;gap:12px;">
+          <!-- Rendered via JavaScript with high-contrast titles (§0.3) -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Report Hazard Modal -->
+  <div id="report-hazard-modal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">⚠️ Submit Field Hazard Observation</div>
+        <button class="modal-close" onclick="closeReportHazardModal()">✕</button>
+      </div>
+      <form onsubmit="handleCreateHazard(event)">
+        <div class="form-group">
+          <label class="form-label">Hazard Type</label>
+          <select id="hz-type" class="form-control" required>
+            <option value="flash_flood">🌊 Flash Flood & River Overflow</option>
+            <option value="landslide">⛰️ Landslide / Hillside Debris Flow</option>
+            <option value="damaged_bridge">🌉 Damaged / Shifted Bridge Span</option>
+            <option value="blocked_road">🚧 Blocked Road / Fallen Debris</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Location / Landmark Name</label>
+          <input type="text" id="hz-location" class="form-control" placeholder="e.g. Song River Bridge Mile 8" value="Song River Bypass KM 14" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Severity Level</label>
+          <select id="hz-severity" class="form-control" required>
+            <option value="critical">🔴 Critical (Impassable for Heavy Trucks)</option>
+            <option value="high">🟠 High (Single Lane / 4x4 Only)</option>
+            <option value="medium">🟡 Medium (Caution / Slow Speed)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observation Details</label>
+          <textarea id="hz-desc" class="form-control" rows="3" placeholder="Describe water depth, rock debris, or structural crack..." required>Water overflowing road shoulder by 1.2m. Strong current detected.</textarea>
+        </div>
+
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#fff;cursor:pointer;">
+            <input type="checkbox" id="hz-block-road" checked class="layer-checkbox">
+            <span>Immediately mark road segment as BLOCKED</span>
+          </label>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeReportHazardModal()">Cancel</button>
+          <button type="submit" class="btn btn-critical">Submit Hazard Report →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderKpis();
+      renderHazardFeed();
+    });
+
+    function renderKpis() {
+      const mount = document.getElementById('kpi-mount');
+      mount.innerHTML = `
+        ${window.UI.createKpiCard({ icon: "⚠️", eyebrow: "ACTIVE HAZARDS", value: "04 Tracked", caption: "2 Critical, 1 High, 1 Medium", accent: "caution" })}
+        ${window.UI.createKpiCard({ icon: "🌊", eyebrow: "FLOOD POINTS", value: "01 Submerged", caption: "NH-58 River Bridge overtopped", accent: "critical" })}
+        ${window.UI.createKpiCard({ icon: "🚧", eyebrow: "BLOCKED ROADS", value: "03 Closed", caption: "Bypass reroutes active", accent: "critical" })}
+        ${window.UI.createKpiCard({ icon: "⏳", eyebrow: "PENDING VERIFY", value: "01 Pending", caption: "Requires District Admin review", accent: "caution" })}
+      `;
+    }
+
+    function renderHazardFeed(filterSeverity = "all") {
+      const container = document.getElementById('hazard-feed-container');
+      const state = window.disasterStore.getState();
+      const user = window.authManager.getCurrentUser();
+      const canVerify = window.authManager.hasPermission('canVerifyHazards');
+
+      let list = state.hazards;
+      if (filterSeverity !== 'all') {
+        list = list.filter(h => h.severity === filterSeverity);
+      }
+
+      container.innerHTML = list.map(h => {
+        const isCrit = h.severity === 'critical';
+        const typeIcon = h.type === 'flash_flood' ? '🌊' : h.type === 'landslide' ? '⛰️' : h.type === 'damaged_bridge' ? '🌉' : '🚧';
+
+        return `
+          <div style="padding:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);border-left:5px solid ${isCrit ? 'var(--status-critical)' : h.severity === 'high' ? 'var(--status-caution)' : 'var(--status-info)'};border-radius:10px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+              <div>
+                <!-- High-contrast title (§0.3 & §2) -->
+                <h3 class="feed-item-title">${typeIcon} ${h.typeName} — ${h.locationName}</h3>
+                <div class="feed-item-meta">
+                  <span>Reported: <strong>${h.reportedAt}</strong></span>
+                  <span>•</span>
+                  <span>Source: <strong>${h.reportedBy}</strong></span>
+                  <span>•</span>
+                  <span>ID: <code style="font-family:var(--font-mono);">${h.id}</code></span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                ${h.roadBlocked ? `<span class="status-pill critical" style="font-weight:700;">🚧 ROAD BLOCKED</span>` : `<span class="status-pill safe">PASSABLE</span>`}
+                ${window.UI.createStatusPill(h.severity, h.severity.toUpperCase())}
+              </div>
+            </div>
+
+            <p style="font-size:13.5px;color:var(--text-secondary-dark);line-height:1.4;margin:4px 0;">
+              ${h.description}
+            </p>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid rgba(53,46,86,0.5);margin-top:4px;flex-wrap:wrap;gap:8px;">
+              <div style="font-size:12px;color:var(--text-secondary-dark);">
+                ${h.verified ? `
+                  <span style="color:var(--status-safe);font-weight:700;">✓ Verified by ${h.verifiedBy}</span>
+                ` : `
+                  <span style="color:var(--status-caution);font-weight:700;">⏳ Unverified Field Observation</span>
+                `}
+              </div>
+
+              <div style="display:flex;gap:6px;">
+                ${(!h.verified && canVerify) ? `
+                  <button class="btn btn-safe btn-sm" onclick="handleVerifyHazard('${h.id}')">✓ Verify Hazard</button>
+                ` : ''}
+
+                <button class="btn btn-secondary btn-sm" onclick="handleToggleBlock('${h.id}')">
+                  ${h.roadBlocked ? 'Re-open Segment' : 'Block Segment'}
+                </button>
+
+                <button class="btn btn-primary btn-sm" onclick="window.location.href='live-map.html'">
+                  View on Map 🗺️
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterHazards(val) {
+      renderHazardFeed(val);
+    }
+
+    function openReportHazardModal() {
+      document.getElementById('report-hazard-modal').classList.add('open');
+    }
+    function closeReportHazardModal() {
+      document.getElementById('report-hazard-modal').classList.remove('open');
+    }
+
+    function handleCreateHazard(e) {
+      e.preventDefault();
+      const type = document.getElementById('hz-type').value;
+      const typeName = document.getElementById('hz-type').selectedOptions[0].text;
+      const location = document.getElementById('hz-location').value;
+      const severity = document.getElementById('hz-severity').value;
+      const desc = document.getElementById('hz-desc').value;
+      const blockRoad = document.getElementById('hz-block-road').checked;
+
+      const user = window.authManager.getCurrentUser();
+
+      window.disasterStore.addHazard({
+        type: type,
+        typeName: typeName,
+        locationName: location,
+        severity: severity,
+        description: desc,
+        roadBlocked: blockRoad,
+        reportedBy: `${user.name} (${user.operatorId})`,
+        lat: 30.2000 + (Math.random() - 0.5) * 0.15,
+        lng: 78.1800 + (Math.random() - 0.5) * 0.15
+      });
+
+      closeReportHazardModal();
+      window.UI.showToast("Field hazard report logged and broadcast to telemetry grid.", "critical");
+      renderHazardFeed();
+      renderKpis();
+    }
+
+    function handleVerifyHazard(id) {
+      const user = window.authManager.getCurrentUser();
+      window.disasterStore.verifyHazard(id, user.name);
+      window.UI.showToast("Hazard verified by District Admin.", "safe");
+      renderHazardFeed();
+      renderKpis();
+    }
+
+    function handleToggleBlock(id) {
+      window.disasterStore.toggleRoadBlock(id);
+      window.UI.showToast("Road segment closure status updated.", "critical");
+      renderHazardFeed();
+      renderKpis();
+    }
+  </script>
+</body>
+</html>

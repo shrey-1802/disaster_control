@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Analytics & Reports — DISISTA CONTROL</title>
+  <meta name="description" content="Operational performance analytics, delivery success metrics, and hazard resolution reports.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="navbar-mount" data-active="reports"></div>
+
+    <main class="main-content">
+      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <div class="page-header">
+        <div class="header-left">
+          <span class="section-eyebrow">POST-DISASTER EVALUATION</span>
+          <h1 class="page-title">Network Analytics & Incident Reports</h1>
+          <p class="page-description">
+            Quantitative assessment of supply chain resilience, transit delays, and shelter coverage across Sector 7.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="exportReportData()">
+            <span>📥 Export CSV Data</span>
+          </button>
+          <button class="btn btn-primary" onclick="window.print()">
+            <span>🖨️ Print Operations Report</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <div id="kpi-mount" class="grid-kpi-4"></div>
+
+      <div class="grid-equal-2col" style="margin-top:var(--space-4);">
+        <!-- Road Network Accessibility Card -->
+        <div class="card-dark">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="section-eyebrow">INFRASTRUCTURE HEALTH</span>
+              <div class="card-title">Arterial Highway & Feeder Road Status</div>
+            </div>
+            <span class="status-pill caution">Monsoon Alert</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            ${window.UI.createDataBar({ title: "🟢 Fully Accessible Corridors (NH-72, Western Bypass)", current: 72, max: 100, unit: "%", variant: "safe" })}
+            ${window.UI.createDataBar({ title: "🟡 Restricted / Single-Lane Passes (Chila Hill Pass)", current: 18, max: 100, unit: "%", variant: "caution" })}
+            ${window.UI.createDataBar({ title: "🔴 Submerged / Blocked Bridges (NH-58 Bridge 7)", current: 10, max: 100, unit: "%", variant: "critical" })}
+          </div>
+        </div>
+
+        <!-- Supply Fulfillment by Category -->
+        <div class="card-dark">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="section-eyebrow">SUPPLY FULFILLMENT</span>
+              <div class="card-title">Critical Category Delivery Ratio</div>
+            </div>
+            <span class="status-pill safe">Cold-Chain Secure</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            ${window.UI.createDataBar({ title: "💉 Insulin Vials (Cold Chain: 3.4°C)", current: 94, max: 100, unit: "% Target Met", variant: "safe" })}
+            ${window.UI.createDataBar({ title: "🩸 O-Negative Blood Units", current: 91, max: 100, unit: "% Target Met", variant: "caution" })}
+            ${window.UI.createDataBar({ title: "💧 Potable Water Purifiers", current: 98, max: 100, unit: "% Target Met", variant: "safe" })}
+            ${window.UI.createDataBar({ title: "🍼 Infant Nutrition Powder", current: 89, max: 100, unit: "% Target Met", variant: "caution" })}
+          </div>
+        </div>
+      </div>
+
+      <!-- Root Cause Incident Analysis Table -->
+      <div class="card-dark" style="margin-top:var(--space-4);">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="section-eyebrow">ROOT CAUSE ANALYSIS</span>
+            <div class="card-title">Recorded Hazard Disruptions & Mitigation Log</div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Hazard ID</th>
+                <th>Disruption Event</th>
+                <th>Impacted Sector</th>
+                <th>Affected Convoys</th>
+                <th>Mitigation Strategy</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HAZ-001</strong></td>
+                <td>Flash Flood & Inundation</td>
+                <td>NH-58 River Crossing (Bridge 7)</td>
+                <td>Convoy C-014, C-019</td>
+                <td>Rerouted via High Mountain Ridge Bypass (+25 min)</td>
+                <td>${window.UI.createStatusPill('critical', 'BLOCKED')}</td>
+              </tr>
+              <tr>
+                <td><strong>HAZ-002</strong></td>
+                <td>Hillside Debris Flow</td>
+                <td>Chila Hill Pass (Mile 14)</td>
+                <td>Convoy C-019</td>
+                <td>Single-lane clearance by heavy earthmovers</td>
+                <td>${window.UI.createStatusPill('caution', 'RESTRICTED')}</td>
+              </tr>
+              <tr>
+                <td><strong>HAZ-003</strong></td>
+                <td>Structural Bridge Fracture</td>
+                <td>Song River Secondary Span</td>
+                <td>Convoy C-008</td>
+                <td>Heavy vehicles rerouted to Eastern Bypass</td>
+                <td>${window.UI.createStatusPill('critical', 'CLOSED')}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderKpis();
+    });
+
+    function renderKpis() {
+      const mount = document.getElementById('kpi-mount');
+      mount.innerHTML = `
+        ${window.UI.createKpiCard({ icon: "📈", eyebrow: "DELIVERY SUCCESS", value: "96.4%", caption: "+2.1% from prior 24h cycle", accent: "safe" })}
+        ${window.UI.createKpiCard({ icon: "🛣️", eyebrow: "ROAD ACCESSIBILITY", value: "72% Passable", caption: "18% restricted, 10% blocked", accent: "caution" })}
+        ${window.UI.createKpiCard({ icon: "⏱️", eyebrow: "AVG REROUTE DELAY", value: "+28 Mins", caption: "Reduced via alternate passes", accent: "safe" })}
+        ${window.UI.createKpiCard({ icon: "🔄", eyebrow: "SWAP EFFICIENCY", value: "100%", caption: "3 of 3 transfers on track", accent: "violet" })}
+      `;
+    }
+
+    function exportReportData() {
+      const state = window.disasterStore.getState();
+      const rows = [
+        ["Hazard_ID", "Type", "Location", "Severity", "Verified", "Reported_By"],
+        ...state.hazards.map(h => [h.id, h.typeName, h.locationName, h.severity, h.verified, h.reportedBy])
+      ];
+
+      const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `DISISTA_CONTROL_REPORT_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.UI.showToast("CSV report generated and downloaded.", "safe");
+    }
+  </script>
+</body>
+</html>

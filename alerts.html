@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Command Center Alerts & Triage — DISISTA CONTROL</title>
+  <meta name="description" content="Emergency alerts triage, incident acknowledgment, and national HQ command escalation center.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="navbar-mount" data-active="alerts"></div>
+
+    <main class="main-content">
+      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <div class="page-header">
+        <div class="header-left">
+          <span class="section-eyebrow">COMMAND CENTER INCIDENT MATRIX</span>
+          <h1 class="page-title">Operational Alerts & Triage Stream</h1>
+          <p class="page-description">
+            Critical supply deficits, flood barriers, and cold-chain temperature telemetry alerts requiring command review.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="acknowledgeAllAlerts()">
+            <span>✓ Acknowledge All</span>
+          </button>
+          <button class="btn btn-critical" onclick="triggerSimulatedSiren()">
+            <span>🚨 Test Alert Siren</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <div id="kpi-mount" class="grid-kpi-4"></div>
+
+      <!-- Alerts Feed Container -->
+      <div class="card-dark" style="margin-top:var(--space-4);">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="section-eyebrow">ACTIVE INCIDENTS</span>
+            <div class="card-title">Priority Incident Triage List</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <select class="form-control" style="width:170px;padding:6px 10px;font-size:12px;" onchange="filterAlerts(this.value)">
+              <option value="all">All Alerts</option>
+              <option value="critical">Critical Only</option>
+              <option value="unacknowledged">Unacknowledged Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="alerts-list-container" style="display:flex;flex-direction:column;gap:14px;">
+          <!-- Rendered via JavaScript -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderKpis();
+      renderAlertsPage();
+    });
+
+    function renderKpis() {
+      const mount = document.getElementById('kpi-mount');
+      mount.innerHTML = `
+        ${window.UI.createKpiCard({ icon: "🚨", eyebrow: "UNRESOLVED ALERTS", value: "03 Critical", caption: "Immediate action required", accent: "critical" })}
+        ${window.UI.createKpiCard({ icon: "⚡", eyebrow: "ESCALATED TO HQ", value: "01 Alert", caption: "National Command notified", accent: "critical" })}
+        ${window.UI.createKpiCard({ icon: "⚠️", eyebrow: "CAUTION WARNINGS", value: "01 Warning", caption: "Stock depletion forecast", accent: "caution" })}
+        ${window.UI.createKpiCard({ icon: "✓", eyebrow: "ACKNOWLEDGED", value: "02 Handled", caption: "Field units responding", accent: "safe" })}
+      `;
+    }
+
+    function renderAlertsPage(filter = "all") {
+      const container = document.getElementById('alerts-list-container');
+      const state = window.disasterStore.getState();
+
+      let list = state.alerts;
+      if (filter === 'critical') list = list.filter(a => a.severity === 'critical');
+      if (filter === 'unacknowledged') list = list.filter(a => !a.acknowledged);
+
+      container.innerHTML = list.map(a => {
+        const isCrit = a.severity === 'critical';
+
+        return `
+          <div style="padding:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);border-left:5px solid ${isCrit ? 'var(--status-critical)' : 'var(--status-caution)'};border-radius:10px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+              <div>
+                <h3 class="feed-item-title" style="font-size:16px;">
+                  ${isCrit ? '🚨' : '⚠️'} ${a.title}
+                </h3>
+                <div class="feed-item-meta">
+                  <span>Source: <strong>${a.source}</strong></span>
+                  <span>•</span>
+                  <span>Timestamp: <strong>${a.timestamp}</strong></span>
+                  <span>•</span>
+                  <span>Alert ID: <code style="font-family:var(--font-mono);">${a.id}</code></span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                ${a.escalated ? `<span class="status-pill critical pulse-critical" style="font-weight:800;">⚡ ESCALATED TO HQ</span>` : ''}
+                ${a.acknowledged ? `<span class="status-pill safe">✓ Acknowledged</span>` : `<span class="status-pill critical">PENDING</span>`}
+                ${window.UI.createStatusPill(a.severity, a.severity.toUpperCase())}
+              </div>
+            </div>
+
+            <p style="font-size:13.5px;color:var(--text-secondary-dark);line-height:1.4;margin:4px 0;">
+              ${a.details}
+            </p>
+
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid rgba(53,46,86,0.4);margin-top:4px;">
+              ${!a.acknowledged ? `
+                <!-- Routine action is primary per §3.2 & §110 -->
+                <button class="btn btn-primary btn-sm" onclick="handleAcknowledgeAlert('${a.id}')">
+                  ✓ Acknowledge Alert
+                </button>
+              ` : `
+                <span style="font-size:12px;color:var(--status-safe);margin-right:8px;">✓ Acknowledged by Command</span>
+              `}
+
+              ${!a.escalated ? `
+                <!-- Consequential action styled secondary/critical per §3.2 -->
+                <button class="btn btn-critical btn-sm" onclick="handleEscalateAlert('${a.id}')">
+                  ⚡ Escalate to HQ Command
+                </button>
+              ` : `
+                <button class="btn btn-secondary btn-sm" disabled style="opacity:0.6;">HQ Case Open</button>
+              `}
+
+              <button class="btn btn-secondary btn-sm" onclick="window.location.href='live-map.html'">
+                Inspect Map 🗺️
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterAlerts(val) {
+      renderAlertsPage(val);
+    }
+
+    function handleAcknowledgeAlert(id) {
+      window.disasterStore.acknowledgeAlert(id);
+      window.UI.showToast(`Alert ${id} acknowledged.`, 'safe');
+      renderAlertsPage();
+      renderKpis();
+    }
+
+    function handleEscalateAlert(id) {
+      window.disasterStore.escalateAlert(id);
+      window.UI.showToast(`Incident ${id} ESCALATED to National Disaster Headquarters.`, 'critical');
+      renderAlertsPage();
+      renderKpis();
+    }
+
+    function acknowledgeAllAlerts() {
+      const state = window.disasterStore.getState();
+      state.alerts.forEach(a => a.acknowledged = true);
+      window.disasterStore.notify();
+      window.UI.showToast("All active alerts acknowledged.", 'safe');
+      renderAlertsPage();
+      renderKpis();
+    }
+
+    function triggerSimulatedSiren() {
+      window.UI.showToast("🚨 EMERGENCY SIREN TEST: Flash Flood telemetry broadcast across Sector 7.", "critical");
+    }
+  </script>
+</body>
+</html>

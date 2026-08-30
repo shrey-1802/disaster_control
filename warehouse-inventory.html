@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warehouse Inventory Matrix — DISISTA CONTROL</title>
+  <meta name="description" content="Real-time warehouse stock tracking, reserved allocation, and cold-chain temperature telemetry.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="navbar-mount" data-active="warehouse-inventory"></div>
+
+    <main class="main-content">
+      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <div class="page-header">
+        <div class="header-left">
+          <span class="section-eyebrow">SUPPLY DEPOT LOGISTICS</span>
+          <h1 class="page-title">Warehouse Inventory & Stock Allocation</h1>
+          <p class="page-description">
+            Strict allocation formula: <strong>Available Supply = Total Stock − Reserved Supply</strong>. Prevents double-allocation of emergency relief stock.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="window.location.href='supply-swap.html'">
+            <span>🔄 Supply Swap Center</span>
+          </button>
+          <button class="btn btn-primary" onclick="openAdjustStockModal()">
+            <span>➕ Receive / Adjust Stock</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <div id="kpi-mount" class="grid-kpi-4"></div>
+
+      <!-- Warehouse Selection Tabs -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;overflow-x:auto;">
+        <button class="btn btn-primary btn-sm" id="tab-wh1" onclick="switchWarehouseTab('WH-001')">Central Hub Alpha (Dehradun)</button>
+        <button class="btn btn-secondary btn-sm" id="tab-wh2" onclick="switchWarehouseTab('WH-002')">Regional Depot Bravo (Rishikesh)</button>
+        <button class="btn btn-secondary btn-sm" id="tab-wh3" onclick="switchWarehouseTab('WH-003')">Emergency Reserve Charlie (Haridwar)</button>
+      </div>
+
+      <!-- Main Inventory Table Card -->
+      <div class="card-dark">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="section-eyebrow" id="selected-wh-eyebrow">DEPOT DETAILS</span>
+            <div class="card-title" id="selected-wh-title">Central Logistics Hub Alpha (Dehradun North)</div>
+          </div>
+          <span class="status-pill safe">Cold-Chain Monitored</span>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item & Category</th>
+                <th>Total In Stock</th>
+                <th>Reserved Stock</th>
+                <th>Available Free Stock</th>
+                <th>Storage Temp</th>
+                <th>Critical Threshold</th>
+                <th>Health Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-tbody">
+              <!-- Rendered via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Adjust Stock Modal -->
+  <div id="adjust-stock-modal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">📦 Receive / Adjust Warehouse Stock</div>
+        <button class="modal-close" onclick="closeAdjustStockModal()">✕</button>
+      </div>
+      <form onsubmit="handleStockAdjustment(event)">
+        <div class="form-group">
+          <label class="form-label">Target Warehouse</label>
+          <select id="adj-wh" class="form-control" required>
+            <option value="WH-001">Central Logistics Hub Alpha</option>
+            <option value="WH-002">Regional Depot Bravo</option>
+            <option value="WH-003">Emergency Reserve Charlie</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Supply Item</label>
+          <select id="adj-item" class="form-control" required>
+            <option value="ITEM-INS">Insulin Vials (Cold Chain)</option>
+            <option value="ITEM-BLD">O-Negative Blood Bags</option>
+            <option value="ITEM-WTR">Potable Water Purifiers (10L)</option>
+            <option value="ITEM-NUT">Infant Nutrition Powder</option>
+            <option value="ITEM-TRM">Trauma Surgical Kits</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Incoming Shipment Quantity</label>
+          <input type="number" id="adj-qty" class="form-control" value="500" min="1" required>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeAdjustStockModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add to Warehouse Stock →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let activeWhId = 'WH-001';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderKpis();
+      renderInventoryTable();
+    });
+
+    function renderKpis() {
+      const mount = document.getElementById('kpi-mount');
+      mount.innerHTML = `
+        ${window.UI.createKpiCard({ icon: "📦", eyebrow: "TOTAL STOCK", value: "20,050 Units", caption: "Across 3 regional logistics depots", accent: "violet" })}
+        ${window.UI.createKpiCard({ icon: "❄️", eyebrow: "COLD-CHAIN VIABILITY", value: "3.4°C - 3.8°C", caption: "All insulin & blood storage nominal", accent: "safe" })}
+        ${window.UI.createKpiCard({ icon: "🔒", eyebrow: "RESERVED CARGO", value: "6,910 Units", caption: "Locked for scheduled convoys", accent: "caution" })}
+        ${window.UI.createKpiCard({ icon: "✅", eyebrow: "FREE AVAILABLE", value: "13,140 Units", caption: "Ready for immediate dispatch", accent: "safe" })}
+      `;
+    }
+
+    function switchWarehouseTab(whId) {
+      activeWhId = whId;
+      document.getElementById('tab-wh1').className = whId === 'WH-001' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+      document.getElementById('tab-wh2').className = whId === 'WH-002' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+      document.getElementById('tab-wh3').className = whId === 'WH-003' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+      renderInventoryTable();
+    }
+
+    function renderInventoryTable() {
+      const tbody = document.getElementById('inventory-tbody');
+      const state = window.disasterStore.getState();
+      const warehouse = state.warehouses.find(w => w.id === activeWhId) || state.warehouses[0];
+
+      document.getElementById('selected-wh-title').innerText = `${warehouse.name} (${warehouse.locationName})`;
+
+      tbody.innerHTML = warehouse.inventory.map(item => {
+        const available = item.total - item.reserved;
+        const isCritical = available <= item.criticalThreshold;
+        const isLow = available <= (item.criticalThreshold * 1.5);
+        const status = isCritical ? 'critical' : isLow ? 'caution' : 'safe';
+
+        return `
+          <tr>
+            <td>
+              <strong style="color:#fff;font-size:14px;">${item.name}</strong>
+              <div style="font-size:11px;color:var(--text-secondary-dark);">${item.category}</div>
+            </td>
+            <td>
+              <strong style="font-size:15px;color:#fff;">${item.total.toLocaleString()}</strong> ${item.unit}
+            </td>
+            <td>
+              <span style="color:var(--status-caution);font-weight:600;">${item.reserved.toLocaleString()}</span> ${item.unit}
+            </td>
+            <td>
+              <strong style="font-size:16px;color:${isCritical ? 'var(--status-critical)' : 'var(--status-safe)'};">
+                ${available.toLocaleString()}
+              </strong> ${item.unit}
+            </td>
+            <td>
+              ${item.temp !== 'N/A' ? `<span style="color:var(--status-safe);font-weight:600;font-size:12px;">❄️ ${item.temp}</span>` : `<span style="color:var(--text-muted-dark);font-size:12px;">Ambient</span>`}
+            </td>
+            <td>
+              <span style="color:var(--text-secondary-dark);font-size:13px;">${item.criticalThreshold.toLocaleString()} ${item.unit}</span>
+            </td>
+            <td>
+              ${window.UI.createStatusPill(status, isCritical ? 'CRITICAL DEFICIT' : isLow ? 'LOW STOCK' : 'NOMINAL')}
+            </td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="window.location.href='supply-swap.html'">
+                Swap / Dispatch
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openAdjustStockModal() {
+      document.getElementById('adjust-stock-modal').classList.add('open');
+    }
+    function closeAdjustStockModal() {
+      document.getElementById('adjust-stock-modal').classList.remove('open');
+    }
+
+    function handleStockAdjustment(e) {
+      e.preventDefault();
+      const whId = document.getElementById('adj-wh').value;
+      const itemId = document.getElementById('adj-item').value;
+      const qty = parseInt(document.getElementById('adj-qty').value, 10);
+
+      const state = window.disasterStore.getState();
+      const wh = state.warehouses.find(w => w.id === whId);
+      if (wh) {
+        const item = wh.inventory.find(i => i.id === itemId);
+        if (item) {
+          item.total += qty;
+          window.disasterStore.notify();
+        }
+      }
+
+      closeAdjustStockModal();
+      window.UI.showToast(`Stock updated: Added ${qty} units.`, 'safe');
+      renderInventoryTable();
+      renderKpis();
+    }
+  </script>
+</body>
+</html>

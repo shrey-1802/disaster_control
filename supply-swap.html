@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supply Swap & Surplus Rebalancing — DISISTA CONTROL</title>
+  <meta name="description" content="Inter-warehouse surplus and shortage rebalancing engine to avert localized supply stockouts.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="navbar-mount" data-active="supply-swap"></div>
+
+    <main class="main-content">
+      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <div class="page-header">
+        <div class="header-left">
+          <span class="section-eyebrow">INTER-WAREHOUSE REBALANCING</span>
+          <h1 class="page-title">Supply Swap & Cross-Hub Exchange</h1>
+          <p class="page-description">
+            Prevent surplus hoarding at regional depots while isolated shelters and forward hubs face stockouts.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="openCreateSwapModal()">
+            <span>➕ Create Supply Swap</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <div id="kpi-mount" class="grid-kpi-4"></div>
+
+      <!-- Clean Single-Line Info Banner (§3.6 — fixing overlapping text bug §0.2) -->
+      <div class="info-banner">
+        <span class="info-banner-icon">💡</span>
+        <div class="info-banner-text">
+          <strong>Autonomous Match Algorithm:</strong> Hub Alpha has 600 unreserved Insulin Vials ready to fulfill Depot Bravo's critical request for Shelter S-012.
+        </div>
+      </div>
+
+      <div class="grid-2col" style="margin-top:var(--space-4);">
+        <!-- Left: Warehouse Available Stock Level Bars (§3.4) -->
+        <div class="card-dark">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="section-eyebrow">CAPACITY & COVERAGE</span>
+              <div class="card-title">Hub Stock Level Bars (Available vs Reserved)</div>
+            </div>
+            <span class="status-pill safe">Live Inventory</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:20px;" id="inventory-bars-container">
+            <!-- Rendered via JavaScript with real graphical progress bars (§3.4) -->
+          </div>
+        </div>
+
+        <!-- Right: Active Supply Swap Pipeline -->
+        <div class="card-dark">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="section-eyebrow">TRANSFER PIPELINE</span>
+              <div class="card-title">Active Supply Swap Movements</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openCreateSwapModal()">+ New Swap</button>
+          </div>
+
+          <div id="swaps-timeline-container" style="display:flex;flex-direction:column;gap:14px;">
+            <!-- Rendered via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create Swap Modal -->
+  <div id="create-swap-modal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🔄 Initiate Cross-Warehouse Supply Swap</div>
+        <button class="modal-close" onclick="closeCreateSwapModal()">✕</button>
+      </div>
+      <form onsubmit="handleCreateSwapSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Origin Warehouse (Surplus Source)</label>
+          <select id="swap-from" class="form-control" required>
+            <option value="WH-001">Central Logistics Hub Alpha (Dehradun) — Surplus Water & Insulin</option>
+            <option value="WH-003">Emergency Reserve Charlie (Haridwar) — Surplus Water</option>
+            <option value="WH-002">Regional Depot Bravo (Rishikesh)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Destination Warehouse (Deficit Receiver)</label>
+          <select id="swap-to" class="form-control" required>
+            <option value="WH-002">Regional Depot Bravo (Rishikesh) — Critical Need</option>
+            <option value="WH-001">Central Logistics Hub Alpha (Dehradun)</option>
+            <option value="WH-003">Emergency Reserve Charlie (Haridwar)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Supply Item Category</label>
+          <select id="swap-item" class="form-control" required>
+            <option value="Insulin Vials (Cold Chain)">Insulin Vials (Cold Chain)</option>
+            <option value="Potable Water Purifiers (10L)">Potable Water Purifiers (10L)</option>
+            <option value="O-Negative Blood Bags">O-Negative Blood Bags</option>
+            <option value="Infant Nutrition Powder">Infant Nutrition Powder</option>
+            <option value="Trauma Surgical Kits">Trauma Surgical Kits</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Transfer Quantity</label>
+          <input type="number" id="swap-qty" class="form-control" value="500" min="10" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Operational Justification / Shelter Demand</label>
+          <input type="text" id="swap-reason" class="form-control" value="Replenish deficit for isolated Shelter S-012" required>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeCreateSwapModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Authorize & Dispatch Swap Convoy →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderKpis();
+      renderSupplySwapPage();
+    });
+
+    function renderKpis() {
+      const mount = document.getElementById('kpi-mount');
+      mount.innerHTML = `
+        ${window.UI.createKpiCard({ icon: "🔄", eyebrow: "ACTIVE SWAPS", value: "03 Transfers", caption: "1 In Transit, 1 Approved, 1 Proposed", accent: "violet" })}
+        ${window.UI.createKpiCard({ icon: "📦", eyebrow: "SURPLUS WATER", value: "12,500 Packs", caption: "Available at Hub Alpha & Reserve Charlie", accent: "safe" })}
+        ${window.UI.createKpiCard({ icon: "🔴", eyebrow: "INSULIN SHORTAGE", value: "500 Vials Deficit", caption: "Depot Bravo & Shelter S-012", accent: "critical" })}
+        ${window.UI.createKpiCard({ icon: "⏱️", eyebrow: "AVG TRANSFER TIME", value: "35 Minutes", caption: "Via Eastern Ridge Bypass", accent: "safe" })}
+      `;
+    }
+
+    function renderSupplySwapPage() {
+      const state = window.disasterStore.getState();
+
+      // 1. Render Graphical Progress Bars for Warehouses (§3.4)
+      const barsContainer = document.getElementById('inventory-bars-container');
+      const whAlpha = state.warehouses[0]; // Hub Alpha
+      const whBravo = state.warehouses[1]; // Depot Bravo
+
+      barsContainer.innerHTML = `
+        <!-- Hub Alpha Section -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <strong style="color:#fff;font-size:14px;">🏢 ${whAlpha.name}</strong>
+            <span class="status-pill safe">Surplus Hub</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            ${window.UI.createDataBar({
+              title: "Insulin Vials (Cold Chain: 3.4°C)",
+              current: 600, // Available
+              max: 2400,    // Total
+              unit: "Available / 2,400 Total",
+              variant: "safe"
+            })}
+            ${window.UI.createDataBar({
+              title: "Potable Water Purifiers (10L)",
+              current: 9300,
+              max: 12500,
+              unit: "Available / 12,500 Total",
+              variant: "safe"
+            })}
+            ${window.UI.createDataBar({
+              title: "O-Negative Blood Bags",
+              current: 150,
+              max: 600,
+              unit: "Available / 600 Total",
+              variant: "caution"
+            })}
+          </div>
+        </div>
+
+        <!-- Depot Bravo Section -->
+        <div style="padding-top:16px;border-top:1px solid var(--border-hairline);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <strong style="color:#fff;font-size:14px;">🏢 ${whBravo.name}</strong>
+            <span class="status-pill critical">Deficit Hub</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            ${window.UI.createDataBar({
+              title: "Insulin Vials (Cold Chain: 4.1°C)",
+              current: 50,
+              max: 350,
+              unit: "Available (CRITICAL DEFICIT)",
+              variant: "critical"
+            })}
+            ${window.UI.createDataBar({
+              title: "Infant Nutrition Powder",
+              current: 250,
+              max: 850,
+              unit: "Available / 850 Total",
+              variant: "caution"
+            })}
+          </div>
+        </div>
+      `;
+
+      // 2. Render Active Supply Swaps Timeline
+      const swapsContainer = document.getElementById('swaps-timeline-container');
+      swapsContainer.innerHTML = state.supplySwaps.map(sw => `
+        <div style="padding:14px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);border-radius:10px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <strong style="color:var(--violet-500);font-size:14px;">${sw.id}</strong>
+            ${window.UI.createStatusPill(sw.status, sw.status.replace('_', ' ').toUpperCase())}
+          </div>
+
+          <div style="font-size:13.5px;font-weight:700;color:#fff;">
+            ${sw.quantity} ${sw.unit} of ${sw.item}
+          </div>
+
+          <div style="font-size:12.5px;color:var(--text-secondary-dark);">
+            <span>${sw.fromWarehouseName}</span> → <span>${sw.toWarehouseName}</span>
+          </div>
+
+          <div style="font-size:11.5px;color:var(--text-muted-dark);">
+            Reason: ${sw.reason}
+          </div>
+
+          <!-- Progress Bar for In-Transit Swaps -->
+          <div style="margin-top:4px;">
+            <div class="bar-track" style="height:6px;">
+              <div class="bar-fill fill-violet" style="width:${sw.progressPct}%;"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-secondary-dark);margin-top:4px;">
+              <span>Progress: ${sw.progressPct}%</span>
+              <span>${sw.convoyId ? `Assigned Convoy: ${sw.convoyId}` : 'Awaiting Truck'}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openCreateSwapModal() {
+      document.getElementById('create-swap-modal').classList.add('open');
+    }
+    function closeCreateSwapModal() {
+      document.getElementById('create-swap-modal').classList.remove('open');
+    }
+
+    function handleCreateSwapSubmit(e) {
+      e.preventDefault();
+      const fromWh = document.getElementById('swap-from').value;
+      const fromName = document.getElementById('swap-from').selectedOptions[0].text.split('—')[0].trim();
+      const toWh = document.getElementById('swap-to').value;
+      const toName = document.getElementById('swap-to').selectedOptions[0].text.split('—')[0].trim();
+      const item = document.getElementById('swap-item').value;
+      const qty = parseInt(document.getElementById('swap-qty').value, 10);
+      const reason = document.getElementById('swap-reason').value;
+
+      window.disasterStore.createSupplySwap({
+        fromWarehouseId: fromWh,
+        fromWarehouseName: fromName,
+        toWarehouseId: toWh,
+        toWarehouseName: toName,
+        item: item,
+        quantity: qty,
+        unit: "Units",
+        reason: reason,
+        status: "in_transit",
+        convoyId: "C-014",
+        progressPct: 20
+      });
+
+      closeCreateSwapModal();
+      window.UI.showToast("Supply Swap initiated and convoy dispatched.", "safe");
+      renderSupplySwapPage();
+      renderKpis();
+    }
+  </script>
+</body>
+</html>

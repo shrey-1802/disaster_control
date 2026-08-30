@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DISISTA CONTROL — Emergency Supply Chain Platform</title>
+  <meta name="description" content="Central Command and Relief Logistics Platform for post-earthquake and disaster relief operations.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Automatic routing
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = window.authManager.getCurrentUser();
+      if (user && user.authenticated) {
+        window.location.href = "dashboard.html";
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</head>
+<body style="display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg-app);color:#fff;">
+  <div style="text-align:center;">
+    <div class="pulse-dot" style="margin:0 auto 16px auto;width:16px;height:16px;"></div>
+    <div style="font-size:18px;font-weight:700;">INITIALIZING DISISTA CONTROL...</div>
+    <div style="font-size:13px;color:var(--text-secondary-dark);margin-top:6px;">Connecting to Indian Relief Logistics Matrix</div>
+  </div>
+</body>
+</html>

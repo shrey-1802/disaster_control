@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Operation Map — DISISTA CONTROL</title>
+  <meta name="description" content="Fullscreen India disaster logistics and real-time hazard operational map.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/map.css">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/map-engine.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="navbar-mount" data-active="live-map"></div>
+
+    <main class="main-content full-bleed">
+      <div class="map-container-wrapper" style="height:100%;border-radius:0;border:none;">
+        <!-- Leaflet Map Container -->
+        <div id="fullscreen-map" class="map-element" style="height:100%;"></div>
+
+        <!-- Floating Panel 1: Network Layers Controller (§1 & §5) -->
+        <div class="map-floating-panel map-floating-layers">
+          <div style="font-size:11px;font-weight:700;color:var(--violet-500);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">
+            OPERATIONAL LAYERS
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#fff;">Sector 7 Relief Network</div>
+
+          <div class="layer-toggle-group">
+            <label class="layer-toggle-item">
+              <span style="display:flex;align-items:center;gap:6px;">
+                <span>🚛</span> <span>Active Convoys</span>
+              </span>
+              <input type="checkbox" class="layer-checkbox" checked onchange="toggleMapLayer('convoys', this.checked)">
+            </label>
+
+            <label class="layer-toggle-item">
+              <span style="display:flex;align-items:center;gap:6px;">
+                <span>🏠</span> <span>Relief Shelters</span>
+              </span>
+              <input type="checkbox" class="layer-checkbox" checked onchange="toggleMapLayer('shelters', this.checked)">
+            </label>
+
+            <label class="layer-toggle-item">
+              <span style="display:flex;align-items:center;gap:6px;">
+                <span>📦</span> <span>Regional Warehouses</span>
+              </span>
+              <input type="checkbox" class="layer-checkbox" checked onchange="toggleMapLayer('warehouses', this.checked)">
+            </label>
+
+            <label class="layer-toggle-item">
+              <span style="display:flex;align-items:center;gap:6px;">
+                <span>⚠️</span> <span>Hazard & Flood Points</span>
+              </span>
+              <input type="checkbox" class="layer-checkbox" checked onchange="toggleMapLayer('hazards', this.checked)">
+            </label>
+
+            <label class="layer-toggle-item">
+              <span style="display:flex;align-items:center;gap:6px;">
+                <span>🛣️</span> <span>Supply Routes & Bypasses</span>
+              </span>
+              <input type="checkbox" class="layer-checkbox" checked onchange="toggleMapLayer('routes', this.checked)">
+            </label>
+          </div>
+
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border-hairline);display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="mapEngine.map.setView([30.22, 78.18], 11)">Reset View</button>
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="openHazardModal()">+ Report</button>
+          </div>
+        </div>
+
+        <!-- Floating Panel 2: Network Inspector Drawer -->
+        <div id="inspector-panel" class="map-floating-panel map-floating-inspector hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border-hairline);">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span id="insp-icon" style="font-size:18px;">🔍</span>
+              <span id="insp-type" style="font-size:11px;font-weight:700;color:var(--violet-500);text-transform:uppercase;">INSPECTOR</span>
+            </div>
+            <button class="modal-close" style="width:24px;height:24px;font-size:12px;" onclick="closeInspector()">✕</button>
+          </div>
+
+          <div id="inspector-content">
+            <!-- Populated dynamically upon clicking any map marker -->
+          </div>
+        </div>
+
+        <!-- Floating Panel 3: Bottom Map Legend -->
+        <div class="map-floating-panel map-floating-legend">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--status-safe);"></div>
+            <span>Safe / Clear</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--status-caution);"></div>
+            <span>Caution / Delayed</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--status-critical);"></div>
+            <span>Critical / Blocked</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let mapEngine = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      mapEngine = new window.DisasterMapEngine('fullscreen-map', {
+        onSelectEntity: handleMapEntitySelect
+      });
+      mapEngine.init();
+    });
+
+    function toggleMapLayer(layerName, isChecked) {
+      if (mapEngine) {
+        mapEngine.setLayerFilter(layerName, isChecked);
+      }
+    }
+
+    function handleMapEntitySelect(type, entity) {
+      const panel = document.getElementById('inspector-panel');
+      const inspIcon = document.getElementById('insp-icon');
+      const inspType = document.getElementById('insp-type');
+      const content = document.getElementById('inspector-content');
+
+      panel.classList.remove('hidden');
+
+      if (type === 'convoy') {
+        inspIcon.innerText = "🚛";
+        inspType.innerText = `CONVOY: ${entity.code}`;
+        content.innerHTML = `
+          <h3 style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">${entity.driverName}</h3>
+          <div style="font-size:12.5px;color:var(--text-secondary-dark);margin-bottom:12px;">Phone: ${entity.driverPhone}</div>
+          
+          <div style="padding:10px;background:#151029;border-radius:8px;border:1px solid var(--border-hairline);margin-bottom:12px;">
+            <div style="font-size:11px;color:var(--text-secondary-dark);">ROUTE TRAJECTORY</div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;">
+              ${entity.originName} → ${entity.destName}
+            </div>
+            <div style="font-size:12px;color:var(--status-safe);margin-top:4px;">
+              ETA: ${entity.etaMinutes} mins • Status: ${entity.status.toUpperCase()}
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <div style="font-size:11.5px;color:var(--text-secondary-dark);margin-bottom:2px;">CARGO MANIFEST</div>
+            <div style="font-size:13px;color:#fff;font-weight:600;">${entity.cargo}</div>
+            <div style="font-size:11.5px;color:var(--violet-500);">Cold Chain: ${entity.coldChainTemp}</div>
+          </div>
+
+          ${entity.alertMessage ? `
+            <div style="padding:10px;background:rgba(242,84,91,0.1);border:1px solid var(--status-critical);border-radius:8px;font-size:12px;color:#fff;margin-bottom:14px;">
+              <strong>⚠️ Route Hazard:</strong> ${entity.alertMessage}
+            </div>
+          ` : ''}
+
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="handleQuickReroute('${entity.id}')">Reroute</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="window.location.href='convoy-dispatch.html'">Details</button>
+          </div>
+        `;
+      } else if (type === 'shelter') {
+        inspIcon.innerText = "🏠";
+        inspType.innerText = `SHELTER: ${entity.id}`;
+        content.innerHTML = `
+          <h3 style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">${entity.name}</h3>
+          <div style="font-size:12.5px;color:var(--text-secondary-dark);margin-bottom:12px;">Location: ${entity.location}</div>
+
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <div style="flex:1;padding:8px;background:#151029;border-radius:8px;border:1px solid var(--border-hairline);">
+              <div style="font-size:11px;color:var(--text-secondary-dark);">SUPPLY COVER</div>
+              <div style="font-size:16px;font-weight:700;color:${entity.daysOfCover < 1.5 ? 'var(--status-critical)' : 'var(--status-safe)'};">
+                ${entity.daysOfCover} Days
+              </div>
+            </div>
+            <div style="flex:1;padding:8px;background:#151029;border-radius:8px;border:1px solid var(--border-hairline);">
+              <div style="font-size:11px;color:var(--text-secondary-dark);">POPULATION</div>
+              <div style="font-size:16px;font-weight:700;color:#fff;">${entity.occupancy} People</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <div style="font-size:11.5px;color:var(--text-secondary-dark);margin-bottom:6px;">CRITICAL SHORTAGES</div>
+            ${entity.needs.map(n => `
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;font-size:12.5px;border-bottom:1px solid rgba(53,46,86,0.3);">
+                <span>${n.item}</span>
+                <span style="color:var(--status-critical);font-weight:700;">Need: ${n.qtyNeeded} ${n.unit} (Stock: ${n.currentStock})</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <button class="btn btn-primary btn-sm" style="width:100%;" onclick="window.location.href='shelter-board.html'">
+            Open Shelter Supply Board →
+          </button>
+        `;
+      } else if (type === 'hazard') {
+        inspIcon.innerText = "⚠️";
+        inspType.innerText = `HAZARD: ${entity.id}`;
+        content.innerHTML = `
+          <h3 style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">${entity.typeName}</h3>
+          <div style="font-size:12.5px;color:var(--text-secondary-dark);margin-bottom:12px;">${entity.locationName}</div>
+
+          <div style="padding:10px;background:rgba(242,84,91,0.08);border:1px solid rgba(242,84,91,0.3);border-radius:8px;font-size:12.5px;color:#fff;margin-bottom:12px;">
+            ${entity.description}
+          </div>
+
+          <div style="font-size:12px;color:var(--text-secondary-dark);margin-bottom:14px;">
+            Reported: ${entity.reportedAt} by <strong>${entity.reportedBy}</strong><br>
+            Status: ${entity.verified ? `<span style="color:var(--status-safe);font-weight:700;">✓ Verified</span>` : `<span style="color:var(--status-caution);font-weight:700;">⏳ Pending Verification</span>`}
+          </div>
+
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-critical btn-sm" style="flex:1;" onclick="toggleRoadBlockAction('${entity.id}')">
+              ${entity.roadBlocked ? 'Re-open Road' : 'Block Road'}
+            </button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="window.location.href='hazard-log.html'">Hazard Log</button>
+          </div>
+        `;
+      } else if (type === 'warehouse') {
+        inspIcon.innerText = "📦";
+        inspType.innerText = `WAREHOUSE: ${entity.id}`;
+        content.innerHTML = `
+          <h3 style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">${entity.name}</h3>
+          <div style="font-size:12.5px;color:var(--text-secondary-dark);margin-bottom:12px;">${entity.locationName}</div>
+          <p style="font-size:12.5px;color:var(--text-secondary-dark);margin-bottom:14px;">
+            Capacity: ${entity.capacity.toLocaleString()} units. Stores cold-chain insulin, blood bags, and emergency nutrition.
+          </p>
+          <button class="btn btn-primary btn-sm" style="width:100%;" onclick="window.location.href='warehouse-inventory.html'">
+            View Warehouse Inventory →
+          </button>
+        `;
+      }
+    }
+
+    function closeInspector() {
+      document.getElementById('inspector-panel').classList.add('hidden');
+    }
+
+    function handleQuickReroute(convoyId) {
+      window.disasterStore.rerouteConvoy(convoyId, "ROUTE-ALT-EAST", 38);
+      window.UI.showToast(`Convoy ${convoyId} rerouted via Eastern Pass.`, 'safe');
+      mapEngine.renderAllData();
+      closeInspector();
+    }
+
+    function toggleRoadBlockAction(hazardId) {
+      window.disasterStore.toggleRoadBlock(hazardId);
+      window.UI.showToast("Road status updated across network.", 'critical');
+      mapEngine.renderAllData();
+      closeInspector();
+    }
+
+    function openHazardModal() {
+      window.location.href = "hazard-log.html";
+    }
+  </script>
+</body>
+</html>

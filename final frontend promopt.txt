@@ -566,4 +566,529 @@ Receive mission → Travel → Monitor route → Report hazards → Follow rerou
 
 
 
+1. 🎯 CONTROL ROOM DASHBOARD
+Main purpose
+
+The Control Room is the central command center. It monitors the complete disaster network and takes high-level operational decisions.
+
+What the Control Room needs to know
+
+What is happening? → Where is the problem? → What is affected? → What action is required?
+
+Dashboard Layout
+┌──────────────────────────────────────────────────────────────────────┐
+│ DISISTA CONTROL                         🔍 Search   🔔 Alerts  👤    │
+├──────────────┬───────────────────────────────────────────────────────┤
+│              │                                                       │
+│ 🏠 Dashboard │              COMMAND CENTER                          │
+│              │              Disaster Operations Overview             │
+│ 🗺 Live Map  │                                                       │
+│              │  🚛 18       🏠 03       ⚠ 07       🚨 03           │
+│ 🚛 Convoys   │  Active      Critical    Hazards    Critical Alerts  │
+│              │                                                       │
+│ 🏠 Shelters  │ ┌─────────────────────────────────────────────────┐ │
+│              │ │                                                 │ │
+│ ⚠ Hazards   │ │              LIVE OPERATION MAP                  │ │
+│              │ │                                                 │ │
+│ 📦 Supply   │ │     🚛              ⚠            🏠              │ │
+│    Swap      │ │                                                 │ │
+│              │ │          🚧 BLOCKED ROAD                       │ │
+│ 🔔 Alerts    │ │                                                 │ │
+│              │ └─────────────────────────────────────────────────┘ │
+│ ⚙ Settings  │                                                       │
+│              │ ┌──────────────────┐ ┌────────────────────────────┐ │
+│              │ │ CRITICAL ISSUES  │ │ COMMAND ACTIONS            │ │
+│              │ │                  │ │                            │ │
+│              │ │ 🔴 Shelter 12    │ │ [REROUTE CONVOY]           │ │
+│              │ │ 🔴 Convoy C-014  │ │ [BLOCK ROAD]               │ │
+│              │ │ 🟠 Hub Bravo     │ │ [EMERGENCY REBALANCE]      │ │
+│              │ │                  │ │ [ESCALATE]                 │ │
+│              │ └──────────────────┘ └────────────────────────────┘ │
+└──────────────┴───────────────────────────────────────────────────────┘
+Control Room KPI Cards
+
+The first thing the manager sees should be:
+
+🚛 Active Convoys
+
+How many relief convoys are currently operating.
+
+🏠 Critical Shelters
+
+How many shelters urgently need supplies.
+
+⚠️ Active Hazards
+
+How many hazards are currently affecting operations.
+
+📦 Critical Supplies
+
+How many essential supplies are below the critical level.
+
+🚨 Critical Alerts
+
+Important unresolved incidents.
+
+📊 Network Risk
+
+Overall condition of the disaster transportation network.
+
+Main Dashboard Sections
+1. Live Operational Map
+
+The largest component.
+
+Shows:
+
+Warehouses
+Shelters
+Convoys
+Hazards
+Blocked roads
+Unsafe roads
+Critical areas
+
+The Control Room can click any object to inspect it.
+
+2. Critical Issues
+
+Automatically shows problems requiring attention.
+
+Example:
+
+🔴 SHELTER 12
+Insulin: Critical
+Supply cover: 1.2 days
+Incoming convoy delayed
+
+[VIEW]
+
+🔴 CONVOY C-014
+Route blocked
+Medical cargo
+
+[REROUTE]
+
+🟠 WAREHOUSE B
+Low insulin stock
+
+[SUPPLY SWAP]
+3. Command Actions
+
+The Control Room can take high-level actions:
+
+Reroute convoy
+Block road
+Broadcast route warning
+Approve emergency Supply Swap
+Escalate critical alert
+Dispatch emergency convoy
+4. Network Status
+
+Shows:
+
+Road Network
+🟢 72% Accessible
+🟡 18% Restricted
+🔴 10% Blocked
+
+Convoy Network
+🟢 14 On Route
+🟡 3 Delayed
+🔴 1 High Risk
+5. Shelter Situation
+
+Shows the most critical shelters first.
+
+Shelter       Supply Cover       Status
+S-012         1.2 Days           🔴 Critical
+S-008         1.8 Days           🟠 Low
+S-021         3.5 Days           🟢 Stable
+6. Live Activity
+
+Shows what is happening right now.
+
+02:31  ⚠ Flood reported on Route 4
+02:33  🚛 Convoy C-014 rerouted
+02:35  🏠 Shelter S-012 escalated
+02:37  🔄 Supply Swap initiated
+Control Room's Core Workflow
+
+Monitor → Detect → Analyze → Decide → Command → Monitor Result
+
+2. 📦 WAREHOUSE MANAGER DASHBOARD
+Main purpose
+
+The Warehouse Manager focuses on supply availability and movement.
+
+Their main question is:
+
+What do I have → What is needed → What can I send → Where should it go?
+
+Dashboard Layout
+┌──────────────────────────────────────────────────────────────────────┐
+│ DISISTA CONTROL                         🔍 Search   🔔 Alerts  👤    │
+├──────────────┬───────────────────────────────────────────────────────┤
+│              │                                                       │
+│ 🏠 Dashboard │              WAREHOUSE OVERVIEW                      │
+│              │              Central Warehouse                       │
+│ 🗺 Live Map  │                                                       │
+│              │  📦 12,450    🔴 03       🔄 04       🚛 06         │
+│ 🚛 Convoys   │  Total Stock  Critical    Transfers   Convoys        │
+│              │                                                       │
+│ 🏠 Shelters  │ ┌─────────────────────────────────────────────────┐ │
+│              │ │             INVENTORY STATUS                    │ │
+│ ⚠ Hazards   │ │                                                 │ │
+│              │ │ Insulin          ████████░░  Critical           │ │
+│ 📦 Supply   │ │ Blood Bags       █████████░  Low                │ │
+│    Swap      │ │ Water            ██████████  Good               │ │
+│              │ │ Infant Nutrition ███████░░░  Moderate           │ │
+│ 🔔 Alerts    │ └─────────────────────────────────────────────────┘ │
+│              │                                                       │
+│ ⚙ Settings  │ ┌────────────────────┐ ┌──────────────────────────┐ │
+│              │ │ SHELTER NEEDS      │ │ SUPPLY SWAP              │ │
+│              │ │                    │ │                          │ │
+│              │ │ S-012 🔴 Insulin  │ │ Hub B needs 500 Water   │ │
+│              │ │ S-008 🟠 Water    │ │ You have 1200 available │ │
+│              │ │                    │ │                          │ │
+│              │ │ [VIEW DEMAND]     │ │ [CREATE SWAP]            │ │
+│              │ └────────────────────┘ └──────────────────────────┘ │
+└──────────────┴───────────────────────────────────────────────────────┘
+Warehouse Manager KPI Cards
+📦 Total Available Stock
+
+Total inventory currently available for operations.
+
+🔴 Critical Items
+
+Items below the critical threshold.
+
+🔄 Active Supply Swaps
+
+Transfers currently in progress.
+
+🚛 Incoming/Outgoing Convoys
+
+Supply vehicles connected to the warehouse.
+
+🏠 Critical Demand
+
+Number of shelters requiring supplies that this warehouse can potentially provide.
+
+Main Warehouse Dashboard Sections
+1. Inventory Overview
+
+This should be the main focus.
+
+Show:
+
+Item
+Total quantity
+Reserved quantity
+Available quantity
+Critical threshold
+Status
+
+Example:
+
+INSULIN
+
+Total       100
+Reserved     40
+Available    60
+
+Status: 🔴 Critical
+2. Critical Supply Needs
+
+Show where supplies are urgently required.
+
+CRITICAL DEMAND
+
+Shelter S-012
+
+Needs:
+500 Insulin Units
+
+Current Cover:
+1.2 Days
+
+Priority:
+CRITICAL
+
+[CHECK INVENTORY]
+[OFFER SUPPLY]
+3. Supply Swap
+
+This should be a major feature on the Warehouse Manager dashboard.
+
+Example:
+
+SUPPLY SWAP OPPORTUNITY
+
+Warehouse B
+
+Needs:
+500 Water
+
+Your Warehouse:
+1,200 Available
+
+Route:
+⚠ Restricted
+
+Potential Transfer:
+500 Units
+
+[CREATE SUPPLY SWAP]
+
+The manager can:
+
+Offer supplies
+Request supplies
+Accept requests
+Track transfers
+View transfer status
+4. Incoming / Outgoing Supplies
+INCOMING
+
+Convoy C-021
+Water
+ETA: 45 min
+🟢 On Route
+
+
+OUTGOING
+
+Convoy C-014
+Insulin
+Destination: S-012
+ETA: 1 hr 20 min
+🟡 Delayed
+5. Relevant Hazards
+
+Only show hazards that affect:
+
+Warehouse
+Incoming routes
+Outgoing routes
+Supply transfers
+
+Example:
+
+⚠ ROAD 14 BLOCKED
+
+Affects:
+2 outgoing deliveries
+
+[VIEW MAP]
+Warehouse Manager's Core Workflow
+
+Check Inventory → Find Surplus/Shortage → Check Demand → Supply Swap → Coordinate Transfer → Track Convoy → Confirm Delivery
+
+3. 🚛 FIELD DRIVER DASHBOARD
+Main purpose
+
+The Field Driver dashboard should be much simpler.
+
+The driver is not managing the disaster network.
+
+They are executing one assigned mission.
+
+Their main question is:
+
+Where do I go → What am I carrying → Is my route safe → What should I report?
+
+Dashboard Layout
+┌───────────────────────────────────────────────────────────────────┐
+│ DISISTA CONTROL                       🔔 2 Alerts     📡 ONLINE    │
+├───────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│                     MY CURRENT MISSION                            │
+│                                                                   │
+│              🚛 CONVOY C-014                                     │
+│                                                                   │
+│        CENTRAL WAREHOUSE  →  SHELTER S-012                       │
+│                                                                   │
+│        Cargo: INSULIN + BLOOD BAGS                               │
+│                                                                   │
+│        STATUS: 🟢 ON ROUTE                                       │
+│        ETA: 45 MINUTES                                           │
+│                                                                   │
+│        ┌─────────────────────────────────────────────────────┐   │
+│        │                                                     │   │
+│        │                  🗺️ MY ROUTE                        │   │
+│        │                                                     │   │
+│        │          🚛 ───────────────→ 🏠                    │   │
+│        │                    ⚠                                │   │
+│        │               Hazard Ahead                          │   │
+│        └─────────────────────────────────────────────────────┘   │
+│                                                                   │
+│   [REPORT HAZARD]      [ROUTE INFO]      [UPDATE STATUS]         │
+│                                                                   │
+│              🚨 IMPORTANT ALERT                                  │
+│        Flood reported 2 km ahead                                 │
+│                                                                   │
+│              [ACKNOWLEDGE]                                       │
+└───────────────────────────────────────────────────────────────────┘
+Driver KPI / Mission Cards
+
+Don't use complex business KPIs here.
+
+Instead use Mission Information Cards.
+
+🚛 Mission Status
+ON ROUTE
+⏱️ ETA
+45 MIN
+📦 Cargo
+100 INSULIN
+20 BLOOD BAGS
+🏠 Destination
+SHELTER S-012
+Main Driver Dashboard Sections
+1. Current Mission
+
+Always visible.
+
+Convoy:
+C-014
+
+From:
+Central Warehouse
+
+To:
+Shelter S-012
+
+Cargo:
+Insulin
+
+Status:
+On Route
+2. Route Map
+
+The map should focus on:
+
+Current location
+Destination
+Assigned route
+Relevant hazards
+Rerouting instructions
+
+Don't overload the driver's screen with all warehouses and shelters.
+
+3. Hazard Reporting
+
+Large, easy-to-access button:
+
+⚠️ REPORT HAZARD
+
+When clicked:
+
+REPORT HAZARD
+
+What did you observe?
+
+○ Flood
+○ Blocked Road
+○ Landslide
+○ Damaged Bridge
+○ Debris
+○ Other
+
+Severity:
+○ Low
+○ Medium
+○ High
+○ Critical
+
+Location:
+[Use Current Location]
+
+Description:
+[________________]
+
+[SUBMIT REPORT]
+4. Alerts
+
+Only mission-related alerts.
+
+Example:
+
+🚨 ROUTE CHANGE
+
+Road ahead is blocked.
+
+New route available.
+
+ETA changes:
+45 min → 1 hr 10 min
+
+[ACKNOWLEDGE]
+[VIEW NEW ROUTE]
+5. Offline Mode
+
+The driver should see connectivity clearly:
+
+📡 ONLINE
+
+or:
+
+📵 OFFLINE
+
+Your updates will be saved
+and synchronized automatically
+when connection returns.
+6. Delivery Confirmation
+
+When reaching the destination:
+
+DELIVERY CONFIRMATION
+
+Shelter:
+S-012
+
+Cargo:
+Insulin — 100 Units
+
+Delivered:
+100 Units
+
+[CONFIRM DELIVERY]
+
+After confirmation:
+
+✅ DELIVERY COMPLETED
+
+Mission C-014
+Completed at 04:32
+🔄 How the 3 Dashboards Connect
+
+This is very important for your PPT and system architecture.
+
+                    🎯 CONTROL ROOM
+                          │
+           ┌──────────────┼──────────────┐
+           ↓              ↓              ↓
+       ⚠ HAZARD       📦 SUPPLY       🏠 DEMAND
+           │              │              │
+           └──────────────┼──────────────┘
+                          ↓
+                    🚛 CONVOY
+                          │
+              ┌───────────┴───────────┐
+              ↓                       ↓
+       📦 WAREHOUSE              🚛 FIELD DRIVER
+       MANAGES SUPPLY             EXECUTES MISSION
+              │                       │
+              └───────────┬───────────┘
+                          ↓
+                    🏠 SHELTER
+                          ↓
+                   DELIVERY DONE
+                          ↓
+                 📊 SYSTEM UPDATED
+
+
+
+
 
