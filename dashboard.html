@@ -331,6 +331,11 @@
       setTimeout(() => {
         dashboardMap = new window.DisasterMapEngine('dash-map-mount');
         dashboardMap.init();
+        setTimeout(() => {
+          if (dashboardMap && dashboardMap.map) {
+            dashboardMap.map.invalidateSize();
+          }
+        }, 300);
       }, 100);
     }
 

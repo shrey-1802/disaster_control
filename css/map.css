@@ -1,15 +1,32 @@
 /**
  * DISISTA CONTROL — Map Specific Styles
  * White + Light Blue Workplace Map System
+ * Fully Responsive for Mobile, Tablet, and Desktop.
  */
 
 .map-viewport-container {
   position: relative;
   width: 100%;
-  height: 100%;
-  min-height: calc(100vh - 68px);
+  height: calc(100vh - 68px);
+  min-height: 500px;
   background-color: #E8F0F8;
   overflow: hidden;
+}
+
+#fullscreen-map {
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - 68px);
+  z-index: 1;
+}
+
+#dash-map-mount {
+  width: 100%;
+  height: 480px;
+  min-height: 440px;
+  z-index: 1;
+  border-radius: 0 0 var(--radius) var(--radius);
+  background-color: #E8F0F8;
 }
 
 #disaster-map {
@@ -30,22 +47,34 @@
   color: var(--text-primary);
   padding: var(--space-4);
   max-width: 320px;
+  transition: all var(--motion-base) var(--ease);
 }
 
-.map-panel-top-left {
+.map-panel-top-left, .map-floating-layers {
   top: 20px;
   left: 20px;
+  width: 280px;
 }
 
-.map-panel-top-right {
+.map-panel-top-right, .map-floating-inspector {
   top: 20px;
   right: 20px;
+  width: 340px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 
-.map-panel-bottom-left {
+.map-panel-bottom-left, .map-floating-legend {
   bottom: 20px;
   left: 20px;
-  max-width: 380px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  max-width: calc(100vw - 40px);
+  overflow-x: auto;
 }
 
 .map-panel-title {
@@ -154,60 +183,36 @@
   100% { transform: scale(2.2); opacity: 0; }
 }
 
-/* Slide-over Inspector Drawer */
-.map-inspector-drawer {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 380px;
-  background: var(--surface);
-  border-left: 1px solid var(--border);
-  box-shadow: -4px 0 25px rgba(30, 70, 100, 0.12);
-  z-index: 950;
-  transform: translateX(100%);
-  transition: transform var(--motion-base) var(--ease);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
+.hidden {
+  display: none !important;
 }
 
-.map-inspector-drawer.open {
-  transform: translateX(0);
-}
+/* Mobile & Tablet Responsive Adaptations for Map */
+@media (max-width: 768px) {
+  .map-floating-layers {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    width: calc(100% - 20px);
+    max-width: none;
+    padding: 10px 14px;
+  }
 
-.inspector-header {
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--surface-soft);
-}
+  .map-floating-inspector {
+    top: auto;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    width: calc(100% - 20px);
+    max-height: 45vh;
+  }
 
-.inspector-body {
-  padding: var(--space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  flex: 1;
-}
+  .map-floating-legend {
+    display: none; /* Hide secondary legend on mobile to keep map clear */
+  }
 
-.inspector-field {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.inspector-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.inspector-val {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-primary);
+  #dash-map-mount {
+    height: 340px;
+    min-height: 340px;
+  }
 }

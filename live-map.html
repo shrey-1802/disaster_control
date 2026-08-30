@@ -151,6 +151,11 @@
         onSelectEntity: handleMapEntitySelect
       });
       mapEngine.init();
+      setTimeout(() => {
+        if (mapEngine && mapEngine.map) {
+          mapEngine.map.invalidateSize();
+        }
+      }, 200);
     });
 
     function toggleMapLayer(layerName, isChecked) {

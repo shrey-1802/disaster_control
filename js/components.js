@@ -1,6 +1,7 @@
 /**
  * DISISTA CONTROL — Reusable UI Components & Renderers
  * Tailored for 3 Roles: Control Room, Warehouse Manager, Field Driver
+ * Fully Responsive with Mobile Navigation Drawer & Touch Optimizations
  */
 
 const UI = {
@@ -56,7 +57,7 @@ const UI = {
           </a>
         </div>
 
-        <nav class="nav-menu">
+        <nav class="nav-menu" id="primary-nav-menu">
           ${navLinksHtml}
         </nav>
 
@@ -88,7 +89,7 @@ const UI = {
       eyebrow,
       value,
       caption,
-      accent = "violet",
+      accent = "blue",
       trendHtml = ""
     } = options;
 
@@ -107,7 +108,7 @@ const UI = {
     `;
   },
 
-  // 3. Status Pill (§3.1)
+  // 3. Status Pill
   createStatusPill(status, customLabel) {
     const map = {
       safe: { label: "Safe / Confirmed", class: "safe", icon: "✓" },
@@ -127,7 +128,7 @@ const UI = {
       info: { label: "Info Notice", class: "info", icon: "ℹ" }
     };
 
-    const config = map[status] || { label: status, class: "passive-dark", icon: "•" };
+    const config = map[status] || { label: status, class: "passive-neutral", icon: "•" };
     const label = customLabel || config.label;
 
     return `
@@ -138,7 +139,7 @@ const UI = {
     `;
   },
 
-  // 4. Data Level / Progress Bar (§3.4)
+  // 4. Data Level / Progress Bar
   createDataBar(options) {
     const {
       title,
@@ -163,7 +164,7 @@ const UI = {
     `;
   },
 
-  // 5. SVG Sparkline or Honest Empty State (§3.5)
+  // 5. SVG Sparkline or Honest Empty State
   createSparkline(dataPoints) {
     if (!dataPoints || dataPoints.length < 2) {
       return `<div class="sparkline-empty">Not enough history yet</div>`;
@@ -191,7 +192,7 @@ const UI = {
     `;
   },
 
-  // 6. Info Banner (§3.6)
+  // 6. Info Banner
   createInfoBanner(text, title = "System Notice") {
     return `
       <div class="info-banner">
@@ -244,29 +245,29 @@ const UI = {
             <div class="modal-title">Switch Active Role / Mode</div>
             <button class="modal-close" onclick="UI.closeRoleSwitcherModal()">✕</button>
           </div>
-          <p style="font-size:13px;color:var(--text-secondary-dark);margin-bottom:16px;">
+          <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">
             Select one of the 3 operational roles to preview the customized workspace, permissions, and dashboards.
           </p>
           <div style="display:flex;flex-direction:column;gap:10px;">
             <button class="btn btn-secondary" style="justify-content:flex-start;padding:12px;" onclick="window.authManager.switchRole('control_room')">
               <span style="font-size:22px;margin-right:8px;">🎯</span>
               <div style="text-align:left;">
-                <div style="font-weight:700;color:#fff;">1. Control Room Commander</div>
-                <div style="font-size:12px;color:var(--text-secondary-dark);">Central command, network risk score, global rerouting & road blocking</div>
+                <div style="font-weight:700;color:var(--text-primary);">1. Control Room Commander</div>
+                <div style="font-size:12px;color:var(--text-secondary);">Central command, network risk score, global rerouting & road blocking</div>
               </div>
             </button>
             <button class="btn btn-secondary" style="justify-content:flex-start;padding:12px;" onclick="window.authManager.switchRole('warehouse_manager')">
               <span style="font-size:22px;margin-right:8px;">📦</span>
               <div style="text-align:left;">
-                <div style="font-weight:700;color:#fff;">2. Warehouse Manager</div>
-                <div style="font-size:12px;color:var(--text-secondary-dark);">Inventory control (Available = Total - Reserved) & Supply Swaps</div>
+                <div style="font-weight:700;color:var(--text-primary);">2. Warehouse Manager</div>
+                <div style="font-size:12px;color:var(--text-secondary);">Inventory control (Available = Total - Reserved) & Supply Swaps</div>
               </div>
             </button>
             <button class="btn btn-secondary" style="justify-content:flex-start;padding:12px;" onclick="window.authManager.switchRole('field_driver')">
               <span style="font-size:22px;margin-right:8px;">🚛</span>
               <div style="text-align:left;">
-                <div style="font-weight:700;color:#fff;">3. Relief Convoy Field Driver</div>
-                <div style="font-size:12px;color:var(--text-secondary-dark);">Field Mode, 1-tap hazard reporter, offline sync & delivery sign-off</div>
+                <div style="font-weight:700;color:var(--text-primary);">3. Relief Convoy Field Driver</div>
+                <div style="font-size:12px;color:var(--text-secondary);">Field Mode, 1-tap hazard reporter, offline sync & delivery sign-off</div>
               </div>
             </button>
           </div>

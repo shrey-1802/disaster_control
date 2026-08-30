@@ -1,6 +1,7 @@
 /**
  * DISISTA CONTROL — Geospatial Map Engine
  * Powered by Leaflet with White + Light Blue Workplace Map System
+ * Fully responsive with automatic tile fallback and size invalidation.
  */
 
 class DisasterMapEngine {
@@ -37,6 +38,11 @@ class DisasterMapEngine {
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
+    // Ensure container has visible dimensions
+    if (!container.style.height && container.clientHeight === 0) {
+      container.style.height = "460px";
+    }
+
     if (typeof L !== 'undefined') {
       try {
         this.initLeafletMap(container);
@@ -50,6 +56,11 @@ class DisasterMapEngine {
   }
 
   initLeafletMap(container) {
+    // Avoid double initialization
+    if (container._leaflet_id) {
+      container._leaflet_id = null;
+    }
+
     this.map = L.map(this.containerId, {
       center: this.options.center,
       zoom: this.options.zoom,
@@ -58,12 +69,23 @@ class DisasterMapEngine {
     });
 
     // Clean light basemap from CartoDB Voyager
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    const primaryTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
       subdomains: 'abcd'
-    }).addTo(this.map);
+    });
 
-    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+    primaryTiles.on('tileerror', () => {
+      // Fallback to standard OpenStreetMap
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(this.map);
+    });
+
+    primaryTiles.addTo(this.map);
+
+    if (this.options.showControls) {
+      L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+    }
 
     this.layers.routes = L.featureGroup().addTo(this.map);
     this.layers.warehouses = L.featureGroup().addTo(this.map);
@@ -72,6 +94,19 @@ class DisasterMapEngine {
     this.layers.convoys = L.featureGroup().addTo(this.map);
 
     this.renderAllData();
+
+    // Invalidate map size so it renders accurately across containers
+    const refreshSizes = () => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    };
+
+    setTimeout(refreshSizes, 50);
+    setTimeout(refreshSizes, 250);
+    setTimeout(refreshSizes, 600);
+
+    window.addEventListener('resize', refreshSizes);
   }
 
   renderAllData() {
@@ -219,11 +254,11 @@ class DisasterMapEngine {
 
   initFallbackMap(container) {
     container.innerHTML = `
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F8FBFF;color:#172B3A;padding:20px;text-align:center;border:1px solid #E2EAF2;">
-        <div style="font-size:32px;margin-bottom:10px;">🗺️</div>
-        <div style="font-weight:700;font-size:18px;margin-bottom:6px;color:#172B3A;">India Relief Operational Map Active</div>
-        <div style="font-size:13px;color:#5F7180;max-width:400px;">
-          Sector 7 (Dehradun - Rishikesh Corridor): 4 Active Convoys, 3 Warehouses, 4 Shelters, 4 Hazards tracked.
+      <div style="width:100%;height:100%;min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F8FBFF;color:#172B3A;padding:24px;text-align:center;border:1px solid #E2EAF2;border-radius:12px;">
+        <div style="font-size:36px;margin-bottom:10px;">🗺️</div>
+        <div style="font-weight:700;font-size:18px;margin-bottom:6px;color:#172B3A;">India Disaster Telemetry Map Active</div>
+        <div style="font-size:13px;color:#5F7180;max-width:420px;line-height:1.5;">
+          Sector 7 (Dehradun - Rishikesh Corridor): 4 Active Convoys, 3 Regional Warehouses, 4 Relief Shelters, and 4 Geo-Hazards monitored.
         </div>
       </div>
     `;
