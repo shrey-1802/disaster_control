@@ -1,0 +1,569 @@
+      your roll you are a 20+ year full stack developer you have to build website or software war this scenario:
+
+ The Paralyzed Relief Supply Chain Scenario: Following an earthquake that triggers widespread hillside debris flows combined with overflowing river tributaries, primary arterial highways and rural feeder roads become hazardous. Several bridges suffer structural damage and are unsafe for heavy vehicles, while key intersections are submerged under varying depths of fast-moving water. Fleets carrying critical relief materials (infant nutrition, insulin, blood bags, and potable water) depart regional storage hubs, but conventional GPS and map systems continue routing them onto damaged or submerged roads. Supply convoys become stranded, waste critical hours turning back, or end up trapped in dynamic flash-flood zones, leaving isolated relief shelters without essentials for days.
+
+
+
+we want roll base exxecss:
+we have 4 type of roll :-
+DISISTA CONTROL — Role-Based Access
+1. Control Room
+
+Purpose: Central command and decision-making.
+
+Access:
+
+Dashboard — Full access
+Live Map — Full access
+Convoy Dispatch — Create, monitor, reroute, and manage convoys
+Shelter Board — Full network visibility
+Hazard Log — View, verify, and manage hazards
+Supply Swap — Manage and coordinate transfers
+Alerts — View, acknowledge, and escalate critical alerts
+Warehouse Inventory — Network-wide visibility
+Road Blocking — Block road segments and broadcast rerouting
+System Settings — Full operational settings
+Reports and network analytics — Full access
+
+Main responsibility:
+Monitor the complete disaster network, make operational decisions, coordinate resources, and escalate critical situations.
+
+2. District Admin
+
+Purpose: Manage and coordinate relief operations within a specific district.
+
+Access:
+
+Dashboard — District-level overview
+Live Map — View district operations
+Convoy Dispatch — Monitor and coordinate district convoys
+Shelter Board — View district shelters and shortages
+Hazard Log — View and verify district hazards
+Supply Swap — Coordinate and approve district-level transfers
+Alerts — District alerts and escalation
+Warehouse Inventory — View district warehouses
+Reports — District-level reports
+Settings — Role-specific settings
+
+Main responsibility:
+Coordinate warehouses, shelters, hazards, and convoys within the assigned district and escalate major problems to the Control Room.
+
+3. Warehouse Manager
+
+Purpose: Manage warehouse inventory and ensure critical supplies reach locations where they are needed.
+
+Access:
+
+Dashboard — Warehouse-focused overview
+Live Map — View relevant warehouses, shelters, hazards, and supply routes
+Convoy Dispatch — View supply-related convoys and delivery status
+Shelter Board — View shelter demand and shortages
+Hazard Log — View relevant hazards
+Supply Swap — Full access
+Alerts — Warehouse and supply-related alerts
+Inventory — Full access to own warehouse
+Settings — Personal/warehouse settings
+
+Can perform:
+
+Check available inventory
+Identify surplus supplies
+Identify critical shortages
+Offer surplus through Supply Swap
+Request supplies from another warehouse
+Monitor supply transfers
+Track incoming/outgoing convoys
+Check shelter demand
+Respond to critical inventory alerts
+
+Cannot perform:
+
+Block roads
+Manage the entire convoy network
+Modify verified field hazard reports
+Manage other warehouses without authorization
+Perform system-wide administration
+
+Main responsibility:
+Monitor inventory → Identify shortage/surplus → Supply Swap → Coordinate transfer → Track delivery → Confirm availability
+
+4. Field Driver
+
+Purpose: Execute relief missions and provide real-time field information.
+
+Access:
+
+Dashboard — Mission-focused information
+Live Map — Assigned route and relevant hazards
+Convoy Dispatch — Assigned convoy only
+Shelter Board — Assigned destination information
+Hazard Log — Submit field reports
+Supply Swap — No access
+Alerts — Mission-critical alerts
+Field Mode — Full access
+Offline Sync — Full access
+
+Can perform:
+
+View assigned convoy
+View cargo and destination
+Follow assigned route
+Receive rerouting instructions
+Update convoy status
+Acknowledge instructions
+Report blocked roads
+Report flooding
+Report damaged bridges
+Submit hazard observations
+Work in offline mode
+Confirm delivery
+
+Cannot perform:
+
+Dispatch other convoys
+Modify warehouse inventory
+Approve supply transfers
+Block roads globally
+Manage other drivers
+
+Main responsibility:
+Receive mission → Travel → Monitor route → Report hazards → Follow reroute → Deliver supplies → Confirm delivery
+
+
+
+
+
+
+aall role base access have to login in with there crediancial .. and after that they have to enter pincode so that location can be factch and data can be easily accessable respectively
+
+
+
+
+
+
+
+
+features of control romm dashboard
+In your DISISTA CONTROL Control Room dashboard, KPIs are the top-level numbers that tell the manager the current health of the entire relief operation at a glance.
+
+Recommended Control Room KPIs
+🚛 Active Convoys
+Number of relief convoys currently operating.
+Example: 18 Active
+🏠 Critical Shelters
+Number of shelters currently facing critical supply conditions.
+Example: 3 Critical
+⚠️ Active Hazards
+Number of currently reported/verified hazards affecting operations.
+Example: 7 Active
+📦 Critical Supply Items
+Number of essential supply categories below their critical threshold.
+Example: 4 Critical
+🔴 High-Risk Convoys
+Number of convoys currently exposed to significant route or hazard risk.
+Example: 2 High Risk
+⏱️ Delayed Deliveries
+Number of deliveries whose ETA has exceeded the expected delivery window.
+Example: 5 Delayed
+🔄 Active Supply Swaps
+Number of supply transfers currently being coordinated between warehouses.
+Example: 4 Active
+🚨 Unresolved Critical Alerts
+Critical alerts that have not yet been resolved.
+Example: 3 Unresolved
+🏚️ Isolated Shelters
+Shelters that currently have no reliable accessible route.
+Example: 2 Isolated
+📊 Network Risk Score
+Overall operational risk based on hazards, road accessibility, convoy conditions, and critical demand.
+Example: 78 / 100 — HIGH
+For your dashboard, I recommend these 6 main KPI cards:
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ 🚛           │ │ 🏠           │ │ ⚠️           │
+│ ACTIVE       │ │ CRITICAL     │ │ ACTIVE       │
+│ CONVOYS      │ │ SHELTERS     │ │ HAZARDS      │
+│     18       │ │      03      │ │      07      │
+└──────────────┘ └──────────────┘ └──────────────┘
+
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ 📦           │ │ 🚨           │ │ 📊           │
+│ CRITICAL     │ │ UNRESOLVED   │ │ NETWORK      │
+│ SUPPLIES     │ │ ALERTS       │ │ RISK         │
+│     04       │ │      03      │ │   78/100     │
+└──────────────┘ └──────────────┘ └──────────────┘
+
+
+
+
+for distric ADMIN
+
+District Admin — Features in Simple Language
+1. 📊 Dashboard
+
+See the overall situation of the district in one place.
+
+How many shelters need help
+How many convoys are active
+Current hazards
+Available supplies
+Critical alerts
+District risk status
+2. 🗺️ Live Map
+
+See everything happening inside the assigned district on a map.
+
+Locations of shelters
+Warehouses
+Active convoys
+Floods and landslides
+Blocked or unsafe roads
+Areas requiring urgent help
+3. 🚛 Convoy Dispatch
+
+Monitor and coordinate relief vehicles operating in the district.
+
+See which convoys are moving
+Check their destination
+Check their ETA
+See if a convoy is delayed or at risk
+Coordinate rerouting when necessary
+
+Example:
+A convoy going to Shelter A is delayed because of flooding → District Admin checks the situation and coordinates an alternative route with the Control Room.
+
+4. 🏠 Shelter Board
+
+Check the condition and supply needs of shelters in the district.
+
+Which shelters are safe
+Which shelters have low supplies
+Which shelters are critical
+What supplies they need
+How urgently they need them
+Whether a convoy is coming
+
+Example:
+Shelter B has only 1 day of water remaining → District Admin can identify it as a priority.
+
+5. ⚠️ Hazard Log
+
+View and verify hazards reported in the district.
+
+Examples:
+
+Flood
+Landslide
+Damaged bridge
+Blocked road
+Debris
+
+The Admin can check whether a reported hazard is genuine and important enough to affect operations.
+
+6. 🔄 Supply Swap
+
+Help move supplies from a location with extra stock to a location with a shortage.
+
+Example:
+
+Warehouse A has extra water
+↓
+Warehouse B has low water
+↓
+District Admin coordinates the Supply Swap
+
+This helps prevent one warehouse from having unused surplus while another location faces a shortage.
+
+7. 🚨 Alerts
+
+See important problems happening in the district.
+
+Examples:
+
+Critical shelter shortage
+Convoy delayed
+Road blocked
+New major hazard
+Critical medical supply shortage
+
+The District Admin can acknowledge important alerts and escalate serious problems to the Control Room.
+
+8. 📦 Warehouse Inventory
+
+View the warehouses operating inside the district.
+
+The Admin can see:
+
+Available supplies
+Low-stock items
+Critical items
+Incoming supplies
+Outgoing supplies
+Supply transfers
+
+Important: The District Admin mainly monitors warehouse information rather than directly managing every warehouse's inventory.
+
+9. 📈 Reports
+
+Get a summary of what happened in the district.
+
+Reports can show:
+
+Number of deliveries
+Delayed convoys
+Critical shelters
+Reported hazards
+Supply movements
+Resolved alerts
+Overall district performance
+
+This helps the Admin understand what is improving and what still needs attention.
+
+10. ⚙️ Settings
+
+Manage settings related to the Admin's role.
+
+For example:
+
+Account information
+Language
+Notification preferences
+Display preferences
+Operational preferences
+🎯 In Simple Words
+
+The District Admin acts as the middle-level coordinator.
+
+Control Room = Controls the overall network
+District Admin = Manages one district
+Warehouse Manager = Manages supplies
+Field Driver = Executes deliveries
+
+District Admin's Main Workflow
+
+Monitor District → Find Problem → Coordinate Resources → Handle the Situation → Escalate Serious Problems → Confirm Resolution
+
+
+
+3Warehouse Manager — Simple Feature Description
+Purpose
+
+The Warehouse Manager manages the supplies in their warehouse and makes sure the right supplies are sent where they are needed.
+
+1. 📊 Dashboard
+
+Shows the current status of their warehouse.
+
+Total supplies
+Low-stock supplies
+Critical supplies
+Extra/available supplies
+Incoming deliveries
+Outgoing deliveries
+Important alerts
+2. 🗺️ Live Map
+
+Shows locations related to their warehouse.
+
+Their warehouse
+Other relevant warehouses
+Shelters
+Convoys
+Hazards
+Supply routes
+
+The manager can understand where supplies are going and whether there are problems on the route.
+
+3. 🚛 Convoy Dispatch
+
+Shows convoys carrying supplies from or to their warehouse.
+
+The manager can:
+
+See convoy status
+See destination
+Check ETA
+See delayed deliveries
+Track incoming supplies
+Track outgoing supplies
+
+They cannot control all convoys.
+
+4. 🏠 Shelter Board
+
+Shows what shelters need.
+
+For each shelter, the manager can see:
+
+Required supply
+Required quantity
+Current supply level
+Urgency
+Incoming supply
+
+Example:
+Shelter A needs 500 units of water → Manager can check whether their warehouse can provide it.
+
+5. ⚠️ Hazard Log
+
+Shows hazards that may affect their warehouse or supply routes.
+
+Examples:
+
+Flood
+Landslide
+Damaged bridge
+Blocked road
+
+The manager can view relevant hazards, but cannot modify verified hazard information.
+
+6. 🔄 Supply Swap
+
+This is one of the main features for the Warehouse Manager.
+
+The manager can:
+
+See extra supplies
+Offer extra supplies
+See requests from other warehouses
+Request supplies they don't have
+Accept/coordinate a supply transfer
+Track the transfer
+
+Simple example:
+
+Warehouse A has 1,000 water bottles
+Warehouse B needs 500
+↓
+Warehouse A offers 500
+↓
+Supply Swap created
+↓
+Convoy transports the supplies
+↓
+Warehouse B receives them
+
+7. 🚨 Alerts
+
+Shows alerts related to the warehouse.
+
+Examples:
+
+Supply running low
+Critical item shortage
+Incoming delivery delayed
+Outgoing delivery delayed
+Supply Swap request
+Important route problem
+
+The manager can read and respond to relevant alerts.
+
+8. 📦 Inventory
+
+This is the main working area for the Warehouse Manager.
+
+The manager can:
+
+View all stock
+Check available quantity
+Check reserved quantity
+Identify low stock
+Identify surplus
+Track incoming stock
+Track outgoing stock
+Update warehouse inventory when authorized
+Important:
+
+Available supply = Total stock − Reserved supply
+
+This prevents the manager from offering supplies that are already reserved for another operation.
+
+9. ⚙️ Settings
+
+Basic settings for the manager.
+
+Account details
+Warehouse information
+Notification preferences
+Language
+Display preferences
+❌ What the Warehouse Manager Cannot Do
+
+To keep roles clear:
+
+❌ Cannot block roads
+❌ Cannot control all convoys
+❌ Cannot change verified hazards
+❌ Cannot manage other warehouses directly
+❌ Cannot change system-wide settings
+❌ Cannot manage users or roles
+🔄 Simple Warehouse Manager Workflow
+📦 CHECK INVENTORY
+        ↓
+🔍 FIND SURPLUS / SHORTAGE
+        ↓
+🏠 CHECK SHELTER DEMAND
+        ↓
+🔄 CREATE / ACCEPT SUPPLY SWAP
+        ↓
+🚛 COORDINATE SUPPLY TRANSFER
+        ↓
+📍 TRACK CONVOY
+        ↓
+🏠 SUPPLY REACHES DESTINATION
+        ↓
+✅ CONFIRM DELIVERY
+        ↓
+📦 INVENTORY UPDATED
+In one sentence:
+
+Warehouse Manager = Check supplies → Find where they are needed → Swap/transfer supplies → Track delivery → Confirm the stock movement.
+
+
+
+
+4. Field Driver
+
+Purpose: Execute relief missions and provide real-time field information.
+
+Access:
+
+Dashboard — Mission-focused information
+Live Map — Assigned route and relevant hazards
+Convoy Dispatch — Assigned convoy only
+Shelter Board — Assigned destination information
+Hazard Log — Submit field reports
+Supply Swap — No access
+Alerts — Mission-critical alerts
+Field Mode — Full access
+Offline Sync — Full access
+
+Can perform:
+
+View assigned convoy
+View cargo and destination
+Follow assigned route
+Receive rerouting instructions
+Update convoy status
+Acknowledge instructions
+Report blocked roads
+Report flooding
+Report damaged bridges
+Submit hazard observations
+Work in offline mode
+Confirm delivery
+
+Cannot perform:
+
+Dispatch other convoys
+Modify warehouse inventory
+Approve supply transfers
+Block roads globally
+Manage other drivers
+
+Main responsibility:
+Receive mission → Travel → Monitor route → Report hazards → Follow reroute → Deliver supplies → Confirm delivery
+
+
+
+
+
