@@ -13,20 +13,165 @@
   <script src="js/components.js"></script>
 
   <style>
+    /* Fullscreen Animated Canvas Container */
     body {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 10%, #EFF8FF 0%, #F7FAFC 65%, #EDF4F9 100%);
+      background: radial-gradient(circle at 50% 12%, #EFF8FF 0%, #F7FAFC 60%, #E9F2F9 100%);
       padding: 24px;
       overflow-x: hidden;
+      position: relative;
     }
 
+    /* Ambient Background Network Mesh Animation */
+    #ambient-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* ==========================================================================
+       INTRO ANIMATION SCREEN (Subtle, Elegant, Fast)
+       ========================================================================== */
+    .intro-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 40%, #FFFFFF 0%, #F7FAFC 75%, #EDF5FB 100%);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+    }
+
+    .intro-overlay.dismissed {
+      opacity: 0;
+      transform: translateY(-24px) scale(0.97);
+      filter: blur(8px);
+      pointer-events: none;
+    }
+
+    /* Radar / Telemetry Compass Icon */
+    .intro-emblem-wrap {
+      position: relative;
+      width: 84px;
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .intro-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid rgba(49, 142, 208, 0.3);
+      animation: pulse-ring 2.4s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .intro-ring.r1 { width: 100%; height: 100%; animation-delay: 0s; }
+    .intro-ring.r2 { width: 140%; height: 140%; animation-delay: 0.6s; border-color: rgba(49, 142, 208, 0.18); }
+    .intro-ring.r3 { width: 180%; height: 180%; animation-delay: 1.2s; border-color: rgba(49, 142, 208, 0.08); }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.85); opacity: 0.9; }
+      50% { transform: scale(1.1); opacity: 0.4; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+
+    .intro-logo-box {
+      width: 58px;
+      height: 58px;
+      background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      box-shadow: 0 8px 24px rgba(49, 142, 208, 0.35);
+      position: relative;
+      z-index: 2;
+      animation: emblem-float 2.5s ease-in-out infinite;
+    }
+
+    @keyframes emblem-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .intro-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .intro-status-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue-600);
+      letter-spacing: 0.04em;
+      min-height: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .intro-progress-track {
+      width: 240px;
+      height: 4px;
+      background: var(--border);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .intro-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blue-500), var(--blue-700));
+      border-radius: var(--radius-pill);
+      transition: width 0.3s ease-out;
+    }
+
+    .intro-skip-btn {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      transition: all var(--motion-fast) var(--ease);
+    }
+    .intro-skip-btn:hover {
+      color: var(--text-primary);
+      background: var(--blue-50);
+    }
+
+    /* ==========================================================================
+       LOGIN WINDOW (Smooth Entrance)
+       ========================================================================== */
     .landing-card-wrapper {
       width: 100%;
       max-width: 540px;
       position: relative;
+      z-index: 10;
+      opacity: 0;
+      transform: translateY(28px) scale(0.98);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .landing-card-wrapper.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
 
     .glow-backdrop {
@@ -49,7 +194,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 38px 34px;
-      box-shadow: 0 10px 35px rgba(30, 70, 100, 0.08), 0 1px 3px rgba(30, 70, 100, 0.04);
+      box-shadow: 0 12px 40px rgba(30, 70, 100, 0.08), 0 2px 6px rgba(30, 70, 100, 0.04);
     }
 
     .brand-header {
@@ -108,7 +253,7 @@
       border-color: var(--status-safe-border);
     }
 
-    /* 3-Role Selection Cards */
+    /* 3-Role Selection Stack */
     .role-select-stack {
       display: flex;
       flex-direction: column;
@@ -175,7 +320,7 @@
 
     .step-view {
       display: none;
-      animation: fadeIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      animation: fadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     .step-view.active {
@@ -205,7 +350,40 @@
   </style>
 </head>
 <body>
-  <div class="landing-card-wrapper">
+  <!-- Ambient Floating Grid Canvas -->
+  <canvas id="ambient-canvas"></canvas>
+
+  <!-- ============================================================
+       ELEGANT INTRO ANIMATION SCREEN
+       ============================================================ -->
+  <div id="intro-screen" class="intro-overlay">
+    <div class="intro-emblem-wrap">
+      <div class="intro-ring r1"></div>
+      <div class="intro-ring r2"></div>
+      <div class="intro-ring r3"></div>
+      <div class="intro-logo-box">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="intro-title">DISISTA CONTROL</div>
+    <div id="intro-status" class="intro-status-text">Initializing Relief Telemetry Grid...</div>
+
+    <div class="intro-progress-track">
+      <div id="intro-progress-bar" class="intro-progress-bar"></div>
+    </div>
+
+    <div class="intro-skip-btn" onclick="skipIntroAnimation()">
+      Skip Intro ➔
+    </div>
+  </div>
+
+  <!-- ============================================================
+       LOGIN WINDOW (Revealed smoothly after intro)
+       ============================================================ -->
+  <div id="login-window" class="landing-card-wrapper">
     <div class="glow-backdrop"></div>
 
     <div class="auth-card">
@@ -344,6 +522,127 @@
   </div>
 
   <script>
+    // ==========================================================================
+    // 1. INTRO ANIMATION CONTROLLER (Clean, Elegant, 1.4s Sequence)
+    // ==========================================================================
+    let introFinished = false;
+
+    function runIntroSequence() {
+      const progressBar = document.getElementById('intro-progress-bar');
+      const statusText = document.getElementById('intro-status');
+
+      // Stage 1 (0ms)
+      progressBar.style.width = '25%';
+      statusText.innerText = 'Connecting to Central Telemetry Grid...';
+
+      // Stage 2 (450ms)
+      setTimeout(() => {
+        if (introFinished) return;
+        progressBar.style.width = '65%';
+        statusText.innerText = 'Synchronizing Sector 7 (Himalayan Relief Corridor)...';
+      }, 450);
+
+      // Stage 3 (900ms)
+      setTimeout(() => {
+        if (introFinished) return;
+        progressBar.style.width = '100%';
+        statusText.innerText = '✓ Operational Grid Active. Ready for Access.';
+      }, 900);
+
+      // Reveal Login Card (1300ms)
+      setTimeout(() => {
+        if (!introFinished) {
+          revealLoginCard();
+        }
+      }, 1350);
+    }
+
+    function revealLoginCard() {
+      introFinished = true;
+      const introScreen = document.getElementById('intro-screen');
+      const loginWindow = document.getElementById('login-window');
+
+      if (introScreen) introScreen.classList.add('dismissed');
+      if (loginWindow) loginWindow.classList.add('visible');
+    }
+
+    function skipIntroAnimation() {
+      revealLoginCard();
+    }
+
+    // ==========================================================================
+    // 2. SUBTLE AMBIENT CANVAS BACKGROUND
+    // ==========================================================================
+    function initAmbientCanvas() {
+      const canvas = document.getElementById('ambient-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const nodes = [];
+      const nodeCount = 28;
+
+      for (let i = 0; i < nodeCount; i++) {
+        nodes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          radius: Math.random() * 2.5 + 1.5
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw connecting lines
+        for (let i = 0; i < nodeCount; i++) {
+          for (let j = i + 1; j < nodeCount; j++) {
+            const dx = nodes[i].x - nodes[j].x;
+            const dy = nodes[i].y - nodes[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 140) {
+              ctx.strokeStyle = `rgba(78, 168, 232, ${0.18 * (1 - dist / 140)})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Draw nodes
+        nodes.forEach(node => {
+          ctx.fillStyle = 'rgba(49, 142, 208, 0.35)';
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          node.x += node.vx;
+          node.y += node.vy;
+
+          if (node.x < 0 || node.x > width) node.vx *= -1;
+          if (node.y < 0 || node.y > height) node.vy *= -1;
+        });
+
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    }
+
+    // ==========================================================================
+    // 3. ROLE SELECTION & LOGIN CONTROLLER
+    // ==========================================================================
     let selectedRoleId = 'control_room';
 
     function selectRole(roleId) {
@@ -415,6 +714,12 @@
       window.authManager.quickDemoLogin(roleId);
       window.location.href = "dashboard.html";
     }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      initAmbientCanvas();
+      runIntroSequence();
+    });
   </script>
 </body>
 </html>
