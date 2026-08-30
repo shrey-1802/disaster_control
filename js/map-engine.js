@@ -1,6 +1,6 @@
 /**
  * DISISTA CONTROL — Geospatial Map Engine
- * Powered by Leaflet with high-contrast dark command-center layer & fallback canvas.
+ * Powered by Leaflet with White + Light Blue Workplace Map System
  */
 
 class DisasterMapEngine {
@@ -37,7 +37,6 @@ class DisasterMapEngine {
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
-    // Check if Leaflet L is loaded from CDN
     if (typeof L !== 'undefined') {
       try {
         this.initLeafletMap(container);
@@ -51,7 +50,6 @@ class DisasterMapEngine {
   }
 
   initLeafletMap(container) {
-    // Custom dark command-center tile layer from CartoDB or OpenStreetMap
     this.map = L.map(this.containerId, {
       center: this.options.center,
       zoom: this.options.zoom,
@@ -59,16 +57,14 @@ class DisasterMapEngine {
       attributionControl: false
     });
 
-    // Dark Matter tiles with high contrast
+    // Clean light basemap from CartoDB Voyager
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
       subdomains: 'abcd'
     }).addTo(this.map);
 
-    // Reposition zoom controls
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-    // Initialize Feature Groups for layers
     this.layers.routes = L.featureGroup().addTo(this.map);
     this.layers.warehouses = L.featureGroup().addTo(this.map);
     this.layers.shelters = L.featureGroup().addTo(this.map);
@@ -82,20 +78,19 @@ class DisasterMapEngine {
     if (!this.map || !window.disasterStore) return;
     const state = window.disasterStore.getState();
 
-    // 1. Clear previous layers
     Object.values(this.layers).forEach(layer => layer && layer.clearLayers());
 
-    // 2. Render Routes
+    // 1. Render Routes
     if (this.activeFilters.routes) {
       this.renderRoutes(state);
     }
 
-    // 3. Render Warehouses
+    // 2. Render Warehouses
     if (this.activeFilters.warehouses) {
       state.warehouses.forEach(wh => {
         const icon = L.divIcon({
           className: 'custom-pin-wrapper',
-          html: `<div class="custom-pin pin-warehouse" title="${wh.name}">📦</div>`,
+          html: `<div class="custom-map-pin pin-warehouse" title="${wh.name}">📦</div>`,
           iconSize: [34, 34],
           iconAnchor: [17, 17]
         });
@@ -105,18 +100,18 @@ class DisasterMapEngine {
       });
     }
 
-    // 4. Render Shelters
+    // 3. Render Shelters
     if (this.activeFilters.shelters) {
       state.shelters.forEach(sh => {
         const isCrit = sh.status === 'critical';
-        const iconClass = isCrit ? 'pin-shelter-critical' : 'pin-shelter-stable';
+        const iconClass = isCrit ? 'pin-hazard-critical pulse' : 'pin-shelter';
         const iconSymbol = isCrit ? '🚨' : '🏠';
 
         const icon = L.divIcon({
           className: 'custom-pin-wrapper',
-          html: `<div class="custom-pin ${iconClass}" title="${sh.name}">${iconSymbol}</div>`,
-          iconSize: [36, 36],
-          iconAnchor: [18, 18]
+          html: `<div class="custom-map-pin ${iconClass}" title="${sh.name}">${iconSymbol}</div>`,
+          iconSize: [34, 34],
+          iconAnchor: [17, 17]
         });
 
         const marker = L.marker([sh.lat, sh.lng], { icon }).addTo(this.layers.shelters);
@@ -124,15 +119,16 @@ class DisasterMapEngine {
       });
     }
 
-    // 5. Render Hazards
+    // 4. Render Hazards
     if (this.activeFilters.hazards) {
       state.hazards.forEach(hz => {
-        const iconClass = hz.severity === 'critical' ? 'pin-hazard hazard-critical' : 'pin-hazard';
+        const isCrit = hz.severity === 'critical';
+        const iconClass = isCrit ? 'pin-hazard-critical pulse' : 'pin-hazard-caution';
         const iconSymbol = hz.type === 'flash_flood' ? '🌊' : hz.type === 'landslide' ? '⛰️' : '⚠️';
 
         const icon = L.divIcon({
           className: 'custom-pin-wrapper',
-          html: `<div class="custom-pin ${iconClass}" title="${hz.typeName}"><span>${iconSymbol}</span></div>`,
+          html: `<div class="custom-map-pin ${iconClass}" title="${hz.typeName}"><span>${iconSymbol}</span></div>`,
           iconSize: [34, 34],
           iconAnchor: [17, 17]
         });
@@ -142,15 +138,17 @@ class DisasterMapEngine {
       });
     }
 
-    // 6. Render Active Convoys
+    // 5. Render Active Convoys
     if (this.activeFilters.convoys) {
       state.convoys.forEach(cv => {
         const isHighRisk = cv.status === 'high_risk' || cv.status === 'delayed';
+        const iconClass = isHighRisk ? 'pin-hazard-critical pulse' : 'pin-convoy';
+        
         const icon = L.divIcon({
           className: 'custom-pin-wrapper',
-          html: `<div class="custom-pin pin-convoy ${isHighRisk ? 'pulse-critical' : ''}" title="${cv.code}">🚛</div>`,
-          iconSize: [36, 36],
-          iconAnchor: [18, 18]
+          html: `<div class="custom-map-pin ${iconClass}" title="${cv.code}">🚛</div>`,
+          iconSize: [34, 34],
+          iconAnchor: [17, 17]
         });
 
         const marker = L.marker([cv.currentLat, cv.currentLng], { icon }).addTo(this.layers.convoys);
@@ -160,7 +158,7 @@ class DisasterMapEngine {
   }
 
   renderRoutes(state) {
-    // Primary Arterial Highway with Flood Blockage
+    // Primary Arterial Highway
     const blockedHighwayPoints = [
       [30.3450, 78.0550], // Hub Alpha
       [30.2500, 78.1200], // Song River
@@ -168,22 +166,22 @@ class DisasterMapEngine {
       [30.1350, 78.3220]  // Shelter S-012
     ];
 
-    // Primary route
+    // Primary safe segment (Blue)
     L.polyline(blockedHighwayPoints.slice(0, 3), {
-      color: '#8B6CF6',
+      color: '#318ED0',
       weight: 4,
       dashArray: '6, 8',
-      opacity: 0.8
+      opacity: 0.85
     }).addTo(this.layers.routes);
 
-    // Submerged/Blocked segment
+    // Submerged/Blocked segment (Red)
     L.polyline(blockedHighwayPoints.slice(2), {
-      color: '#F2545B',
+      color: '#D94B55',
       weight: 5,
-      opacity: 0.9
+      opacity: 0.95
     }).addTo(this.layers.routes);
 
-    // Alternative Rerouted Path (Green / Safe)
+    // Alternative Rerouted Bypass Path (Green / Safe)
     const alternateReroutePoints = [
       [30.2500, 78.1200],
       [30.2100, 78.2900], // High mountain ridge pass
@@ -191,7 +189,7 @@ class DisasterMapEngine {
     ];
 
     L.polyline(alternateReroutePoints, {
-      color: '#34D399',
+      color: '#20A66A',
       weight: 4,
       dashArray: '8, 8',
       opacity: 0.95
@@ -221,10 +219,10 @@ class DisasterMapEngine {
 
   initFallbackMap(container) {
     container.innerHTML = `
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#151029;color:#F5F3FC;padding:20px;text-align:center;">
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F8FBFF;color:#172B3A;padding:20px;text-align:center;border:1px solid #E2EAF2;">
         <div style="font-size:32px;margin-bottom:10px;">🗺️</div>
-        <div style="font-weight:700;font-size:18px;margin-bottom:6px;">India Relief Operational Map Active</div>
-        <div style="font-size:13px;color:#A79FC7;max-width:400px;">
+        <div style="font-weight:700;font-size:18px;margin-bottom:6px;color:#172B3A;">India Relief Operational Map Active</div>
+        <div style="font-size:13px;color:#5F7180;max-width:400px;">
           Sector 7 (Dehradun - Rishikesh Corridor): 4 Active Convoys, 3 Warehouses, 4 Shelters, 4 Hazards tracked.
         </div>
       </div>

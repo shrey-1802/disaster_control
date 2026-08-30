@@ -1,5 +1,6 @@
 /**
  * DISISTA CONTROL — Base Styles & Layout
+ * White + Light Blue Theme (70:30 Clean Workplace Ratio)
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
@@ -14,7 +15,7 @@ html, body {
   width: 100%;
   min-height: 100vh;
   background-color: var(--bg-app);
-  color: var(--text-primary-dark);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: 1.5;
@@ -32,11 +33,11 @@ html, body {
   background: var(--bg-app);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-hairline);
+  background: var(--border-strong);
   border-radius: var(--radius-pill);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--violet-500);
+  background: var(--blue-500);
 }
 
 /* Links & Buttons Reset */
@@ -64,7 +65,7 @@ button {
   min-height: 100vh;
 }
 
-/* Top Command Header */
+/* Top Navigation Bar — Clean White with Light Blue Accents */
 .top-navbar {
   position: sticky;
   top: 0;
@@ -74,10 +75,9 @@ button {
   justify-content: space-between;
   height: 68px;
   padding: 0 var(--space-5);
-  background: rgba(21, 16, 41, 0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--border-hairline);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(30, 70, 100, 0.04);
 }
 
 .brand-section {
@@ -92,10 +92,10 @@ button {
   justify-content: center;
   width: 38px;
   height: 38px;
-  background: linear-gradient(135deg, var(--violet-500), #4C28B5);
+  background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
   border-radius: 10px;
-  color: #fff;
-  box-shadow: 0 0 16px rgba(139, 108, 246, 0.4);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(49, 142, 208, 0.35);
 }
 
 .brand-title {
@@ -106,29 +106,27 @@ button {
 .brand-name {
   font-size: var(--text-lg);
   font-weight: 800;
-  letter-spacing: 0.04em;
-  background: linear-gradient(90deg, #FFFFFF, #D6CCFE);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
 }
 
 .brand-subtitle {
   font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--violet-500);
+  color: var(--blue-600);
 }
 
 /* Navigation Links */
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  background: rgba(30, 24, 57, 0.7);
+  gap: 4px;
+  background: var(--surface-muted);
   padding: 4px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--border-hairline);
+  border: 1px solid var(--border);
 }
 
 .nav-link {
@@ -139,20 +137,20 @@ button {
   border-radius: var(--radius-pill);
   font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--text-secondary-dark);
+  color: var(--text-secondary);
   transition: all var(--motion-fast) var(--ease);
   white-space: nowrap;
 }
 
 .nav-link:hover {
-  color: var(--text-primary-dark);
-  background: rgba(139, 108, 246, 0.12);
+  color: var(--text-primary);
+  background: rgba(49, 142, 208, 0.08);
 }
 
 .nav-link.active {
-  color: #FFFFFF;
-  background: var(--violet-500);
-  box-shadow: 0 2px 8px rgba(139, 108, 246, 0.4);
+  color: var(--blue-700);
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgba(30, 70, 100, 0.1);
   font-weight: 600;
 }
 
@@ -165,7 +163,7 @@ button {
   padding: 0 5px;
   border-radius: var(--radius-pill);
   background: var(--status-critical);
-  color: #fff;
+  color: #FFFFFF;
   font-size: 10px;
   font-weight: 700;
 }
@@ -182,8 +180,8 @@ button {
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.3);
+  background: var(--status-safe-bg);
+  border: 1px solid var(--status-safe-border);
   border-radius: var(--radius-pill);
   font-size: var(--text-xs);
   font-weight: 600;
@@ -195,14 +193,6 @@ button {
   height: 8px;
   border-radius: 50%;
   background-color: var(--status-safe);
-  box-shadow: 0 0 8px var(--status-safe);
-  animation: pulse-ring 2s infinite cubic-bezier(0.45, 0, 0.55, 1);
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(0.9); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.5; }
-  100% { transform: scale(0.9); opacity: 1; }
 }
 
 /* Role Selector Badge Dropdown */
@@ -211,31 +201,32 @@ button {
   align-items: center;
   gap: var(--space-2);
   padding: 6px 14px;
-  background: var(--surface-card);
-  border: 1px solid var(--border-hairline);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  color: var(--text-primary-dark);
+  color: var(--text-primary);
   font-size: var(--text-xs);
   font-weight: 600;
   transition: all var(--motion-fast) var(--ease);
+  box-shadow: var(--shadow-card);
 }
 
 .role-badge-btn:hover {
-  border-color: var(--violet-500);
-  box-shadow: var(--shadow-glow-violet);
+  border-color: var(--blue-500);
+  box-shadow: var(--shadow-hover);
 }
 
 .role-avatar {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--violet-500);
+  background: var(--blue-600);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  color: #fff;
+  color: #FFFFFF;
 }
 
 /* Pincode & Sector Badge */
@@ -244,18 +235,18 @@ button {
   align-items: center;
   gap: 5px;
   font-size: var(--text-xs);
-  color: var(--text-secondary-dark);
+  color: var(--text-secondary);
   padding: 5px 10px;
-  background: var(--bg-panel);
+  background: var(--blue-50);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-hairline);
+  border: 1px solid var(--blue-100);
 }
 
 /* Main Content Area */
 .main-content {
   flex: 1;
   padding: var(--space-5);
-  max-width: 1600px;
+  max-width: 1440px;
   width: 100%;
   margin: 0 auto;
 }
@@ -285,22 +276,22 @@ button {
 
 .section-eyebrow {
   font-size: var(--text-xs);
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--violet-500);
+  color: var(--text-muted);
 }
 
 .page-title {
   font-size: var(--text-2xl);
   font-weight: 700;
-  color: var(--text-primary-dark);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .page-description {
   font-size: var(--text-sm);
-  color: var(--text-secondary-dark);
+  color: var(--text-secondary);
   max-width: 780px;
 }
 
@@ -350,7 +341,7 @@ button {
   gap: var(--space-5);
 }
 
-/* Mobile & Tablet Breakpoints */
+/* Responsive Breakpoints */
 @media (max-width: 1280px) {
   .grid-kpi-6 {
     grid-template-columns: repeat(3, 1fr);

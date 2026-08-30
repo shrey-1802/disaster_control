@@ -18,7 +18,7 @@
     <div id="navbar-mount" data-active="hazard-log"></div>
 
     <main class="main-content">
-      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <!-- Clean Page Header -->
       <div class="page-header">
         <div class="header-left">
           <span class="section-eyebrow">GEOTECHNICAL & ROUTE HAZARDS</span>
@@ -34,18 +34,18 @@
         </div>
       </div>
 
-      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <!-- KPI Stat Tiles on White Cards -->
       <div id="kpi-mount" class="grid-kpi-4"></div>
 
       <!-- Hazard Feed & Verification Container -->
-      <div class="card-dark" style="margin-top:var(--space-4);">
+      <div class="card" style="margin-top:var(--space-4);">
         <div class="card-header">
           <div class="card-title-group">
             <span class="section-eyebrow">FIELD OBSERVATION FEED</span>
             <div class="card-title">Real-Time Hazard Incident Stream</div>
           </div>
           <div style="display:flex;gap:8px;">
-            <select class="form-control" style="width:160px;padding:6px 10px;font-size:12px;" onchange="filterHazards(this.value)">
+            <select class="form-control" style="width:160px;padding:6px 10px;font-size:12.5px;" onchange="filterHazards(this.value)">
               <option value="all">All Severities</option>
               <option value="critical">Critical Only</option>
               <option value="high">High Severity</option>
@@ -55,7 +55,7 @@
         </div>
 
         <div id="hazard-feed-container" style="display:flex;flex-direction:column;gap:12px;">
-          <!-- Rendered via JavaScript with high-contrast titles (§0.3) -->
+          <!-- Rendered via JavaScript with high-contrast titles -->
         </div>
       </div>
     </main>
@@ -99,8 +99,8 @@
         </div>
 
         <div class="form-group">
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#fff;cursor:pointer;">
-            <input type="checkbox" id="hz-block-road" checked class="layer-checkbox">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-primary);cursor:pointer;">
+            <input type="checkbox" id="hz-block-road" checked style="accent-color:var(--blue-600);">
             <span>Immediately mark road segment as BLOCKED</span>
           </label>
         </div>
@@ -145,17 +145,17 @@
         const typeIcon = h.type === 'flash_flood' ? '🌊' : h.type === 'landslide' ? '⛰️' : h.type === 'damaged_bridge' ? '🌉' : '🚧';
 
         return `
-          <div style="padding:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);border-left:5px solid ${isCrit ? 'var(--status-critical)' : h.severity === 'high' ? 'var(--status-caution)' : 'var(--status-info)'};border-radius:10px;display:flex;flex-direction:column;gap:8px;">
+          <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-left:5px solid ${isCrit ? 'var(--status-critical)' : h.severity === 'high' ? 'var(--status-caution)' : 'var(--blue-500)'};border-radius:10px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-card);">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
               <div>
-                <!-- High-contrast title (§0.3 & §2) -->
-                <h3 class="feed-item-title">${typeIcon} ${h.typeName} — ${h.locationName}</h3>
-                <div class="feed-item-meta">
+                <!-- High-contrast title -->
+                <h3 class="feed-item-title" style="font-size:15px;color:var(--text-primary);">${typeIcon} ${h.typeName} — ${h.locationName}</h3>
+                <div class="feed-item-meta" style="margin-top:2px;">
                   <span>Reported: <strong>${h.reportedAt}</strong></span>
                   <span>•</span>
                   <span>Source: <strong>${h.reportedBy}</strong></span>
                   <span>•</span>
-                  <span>ID: <code style="font-family:var(--font-mono);">${h.id}</code></span>
+                  <span>ID: <code style="font-family:var(--font-mono);background:var(--surface-muted);padding:1px 4px;border-radius:4px;">${h.id}</code></span>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
@@ -164,12 +164,12 @@
               </div>
             </div>
 
-            <p style="font-size:13.5px;color:var(--text-secondary-dark);line-height:1.4;margin:4px 0;">
+            <p style="font-size:13.5px;color:var(--text-secondary);line-height:1.4;margin:4px 0;">
               ${h.description}
             </p>
 
-            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid rgba(53,46,86,0.5);margin-top:4px;flex-wrap:wrap;gap:8px;">
-              <div style="font-size:12px;color:var(--text-secondary-dark);">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);margin-top:4px;flex-wrap:wrap;gap:8px;">
+              <div style="font-size:12px;color:var(--text-secondary);">
                 ${h.verified ? `
                   <span style="color:var(--status-safe);font-weight:700;">✓ Verified by ${h.verifiedBy}</span>
                 ` : `

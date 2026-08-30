@@ -33,18 +33,18 @@
         </div>
       </div>
 
-      <!-- KPI Row (White surface cards §1.2 & §3.3) -->
+      <!-- KPI Row (White surface cards) -->
       <div id="kpi-mount" class="grid-kpi-4"></div>
 
       <!-- Main Convoy Table Container -->
-      <div class="card-dark" style="margin-top:var(--space-4);">
+      <div class="card" style="margin-top:var(--space-4);">
         <div class="card-header">
           <div class="card-title-group">
             <span class="section-eyebrow">FLEET TELEMETRY</span>
             <div class="card-title">Active Relief Vehicle Convoys</div>
           </div>
           <div style="display:flex;gap:8px;">
-            <input type="text" class="form-control" placeholder="Search by Convoy or Driver..." style="width:240px;padding:6px 12px;font-size:12px;" oninput="filterConvoys(this.value)">
+            <input type="text" class="form-control" placeholder="Search by Convoy or Driver..." style="width:240px;padding:6px 12px;font-size:12.5px;" oninput="filterConvoys(this.value)">
           </div>
         </div>
 
@@ -125,7 +125,7 @@
     function renderKpis() {
       const mount = document.getElementById('kpi-mount');
       mount.innerHTML = `
-        ${window.UI.createKpiCard({ icon: "🚛", eyebrow: "ACTIVE CONVOYS", value: "04 Tracking", caption: "3 on route, 1 delivered", accent: "violet" })}
+        ${window.UI.createKpiCard({ icon: "🚛", eyebrow: "ACTIVE CONVOYS", value: "04 Tracking", caption: "3 on route, 1 delivered", accent: "blue" })}
         ${window.UI.createKpiCard({ icon: "❄️", eyebrow: "COLD-CHAIN CARGO", value: "2 Convoys", caption: "Insulin & Blood at 3.6°C - 3.9°C", accent: "safe" })}
         ${window.UI.createKpiCard({ icon: "⏱️", eyebrow: "DELAYED CONVOYS", value: "01 Delayed", caption: "Convoy C-014 facing flood", accent: "caution" })}
         ${window.UI.createKpiCard({ icon: "🔴", eyebrow: "HIGH-RISK ROUTES", value: "01 High Risk", caption: "C-019 active landslide pass", accent: "critical" })}
@@ -144,29 +144,29 @@
       tbody.innerHTML = filtered.map(c => `
         <tr>
           <td>
-            <strong style="color:var(--violet-500);font-size:14px;">${c.code}</strong>
-            <div style="font-size:11px;color:var(--text-secondary-dark);">${c.id}</div>
+            <strong style="color:var(--blue-700);font-size:14px;">${c.code}</strong>
+            <div style="font-size:11px;color:var(--text-secondary);">${c.id}</div>
           </td>
           <td>
-            <div style="font-weight:600;color:#fff;">${c.driverName}</div>
-            <div style="font-size:11.5px;color:var(--text-secondary-dark);">${c.driverPhone}</div>
+            <div style="font-weight:600;color:var(--text-primary);">${c.driverName}</div>
+            <div style="font-size:11.5px;color:var(--text-secondary);">${c.driverPhone}</div>
           </td>
           <td>
-            <div style="font-weight:600;font-size:13px;color:#fff;">${c.originName.split('(')[0]}</div>
-            <div style="font-size:11px;color:var(--text-secondary-dark);">→ ${c.destName}</div>
+            <div style="font-weight:600;font-size:13px;color:var(--text-primary);">${c.originName.split('(')[0]}</div>
+            <div style="font-size:11px;color:var(--text-secondary);">→ ${c.destName}</div>
           </td>
           <td>
-            <div style="font-size:13px;color:#fff;">${c.cargo}</div>
-            ${c.coldChainTemp !== 'N/A' ? `<span style="font-size:11px;color:var(--status-safe);font-weight:600;">❄️ Temp: ${c.coldChainTemp} (Safe)</span>` : `<span style="font-size:11px;color:var(--text-muted-dark);">Ambient</span>`}
+            <div style="font-size:13px;color:var(--text-primary);">${c.cargo}</div>
+            ${c.coldChainTemp !== 'N/A' ? `<span style="font-size:11.5px;color:var(--status-safe);font-weight:600;">❄️ Temp: ${c.coldChainTemp} (Safe)</span>` : `<span style="font-size:11.5px;color:var(--text-muted);">Ambient</span>`}
           </td>
           <td>
-            <strong style="font-size:15px;color:#fff;">${c.etaMinutes > 0 ? `${c.etaMinutes} min` : 'Delivered'}</strong>
+            <strong style="font-size:15px;color:var(--text-primary);">${c.etaMinutes > 0 ? `${c.etaMinutes} min` : 'Delivered'}</strong>
           </td>
           <td>
             <div style="font-size:12.5px;color:${c.status === 'delayed' ? 'var(--status-caution)' : c.status === 'high_risk' ? 'var(--status-critical)' : 'var(--status-safe)'};font-weight:600;">
               ${c.routeStatus}
             </div>
-            <div style="font-size:11px;color:var(--text-secondary-dark);">${c.routeId}</div>
+            <div style="font-size:11px;color:var(--text-secondary);">${c.routeId}</div>
           </td>
           <td>
             ${window.UI.createStatusPill(c.status)}

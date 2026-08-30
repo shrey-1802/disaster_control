@@ -18,7 +18,7 @@
     <div id="navbar-mount" data-active="shelter-board"></div>
 
     <main class="main-content">
-      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <!-- Clean Page Header -->
       <div class="page-header">
         <div class="header-left">
           <span class="section-eyebrow">RELIEF REQUISITION MATRIX</span>
@@ -34,7 +34,7 @@
         </div>
       </div>
 
-      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <!-- KPI Stat Tiles on White Cards -->
       <div id="kpi-mount" class="grid-kpi-4"></div>
 
       <!-- Main Shelters Grid -->
@@ -104,7 +104,7 @@
     function renderKpis() {
       const mount = document.getElementById('kpi-mount');
       mount.innerHTML = `
-        ${window.UI.createKpiCard({ icon: "🏠", eyebrow: "TOTAL SHELTERS", value: "04 Camps", caption: "1,950 displaced individuals", accent: "violet" })}
+        ${window.UI.createKpiCard({ icon: "🏠", eyebrow: "TOTAL SHELTERS", value: "04 Camps", caption: "1,950 displaced individuals", accent: "blue" })}
         ${window.UI.createKpiCard({ icon: "🚨", eyebrow: "CRITICAL DEFICIT", value: "02 Shelters", caption: "S-012 & S-014 under 1.5 days cover", accent: "critical" })}
         ${window.UI.createKpiCard({ icon: "🚫", eyebrow: "ISOLATED CAMPS", value: "02 Isolated", caption: "No reliable road access currently", accent: "critical" })}
         ${window.UI.createKpiCard({ icon: "🚛", eyebrow: "INBOUND CONVOYS", value: "03 Trucks", caption: "C-014, C-021, C-019 en route", accent: "safe" })}
@@ -120,55 +120,55 @@
         const isIsolated = sh.isIsolated;
 
         return `
-          <div class="card-dark" style="display:flex;flex-direction:column;justify-content:space-between;border-top:4px solid ${isCrit ? 'var(--status-critical)' : sh.status === 'caution' ? 'var(--status-caution)' : 'var(--status-safe)'};">
+          <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;border-top:4px solid ${isCrit ? 'var(--status-critical)' : sh.status === 'caution' ? 'var(--status-caution)' : 'var(--status-safe)'};">
             <div>
               <div class="card-header" style="margin-bottom:12px;">
                 <div>
-                  <div style="font-size:11px;font-weight:700;color:var(--violet-500);text-transform:uppercase;letter-spacing:0.06em;">
+                  <div style="font-size:11.5px;font-weight:700;color:var(--blue-600);text-transform:uppercase;letter-spacing:0.06em;">
                     ${sh.id} • ${sh.location}
                   </div>
                   <h3 class="card-title" style="font-size:17px;margin-top:2px;">${sh.name}</h3>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-                  ${isIsolated ? `<span class="status-pill critical pulse-critical" style="font-weight:800;">🚫 ISOLATED ACCESS</span>` : ''}
+                  ${isIsolated ? `<span class="status-pill critical" style="font-weight:800;">🚫 ISOLATED ACCESS</span>` : ''}
                   ${window.UI.createStatusPill(sh.status)}
                 </div>
               </div>
 
               <!-- Metrics Row -->
-              <div style="display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:10px;margin-bottom:16px;background:#151029;padding:12px;border-radius:10px;border:1px solid var(--border-hairline);">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:10px;margin-bottom:16px;background:var(--surface-soft);padding:12px;border-radius:10px;border:1px solid var(--border);">
                 <div>
-                  <div style="font-size:11px;color:var(--text-secondary-dark);text-transform:uppercase;">Days of Cover</div>
+                  <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:600;">Days of Cover</div>
                   <div style="font-size:20px;font-weight:800;color:${isCrit ? 'var(--status-critical)' : sh.daysOfCover < 2.5 ? 'var(--status-caution)' : 'var(--status-safe)'};">
                     ${sh.daysOfCover} Days
                   </div>
                 </div>
 
                 <div>
-                  <div style="font-size:11px;color:var(--text-secondary-dark);text-transform:uppercase;">Population</div>
-                  <div style="font-size:18px;font-weight:700;color:#fff;">
-                    ${sh.occupancy} <span style="font-size:12px;color:var(--text-secondary-dark);">/ ${sh.capacity}</span>
+                  <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:600;">Population</div>
+                  <div style="font-size:18px;font-weight:700;color:var(--text-primary);">
+                    ${sh.occupancy} <span style="font-size:12px;color:var(--text-secondary);">/ ${sh.capacity}</span>
                   </div>
                 </div>
 
                 <div>
-                  <div style="font-size:11px;color:var(--text-secondary-dark);text-transform:uppercase;margin-bottom:4px;">Supply Trend</div>
-                  <!-- SVG Sparkline (§3.5) -->
+                  <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;font-weight:600;">Supply Trend</div>
+                  <!-- SVG Sparkline -->
                   ${window.UI.createSparkline(sh.sparklineData)}
                 </div>
               </div>
 
               <!-- Supply Demand Breakdown -->
               <div style="margin-bottom:16px;">
-                <div style="font-size:12px;font-weight:700;color:var(--text-secondary-dark);text-transform:uppercase;margin-bottom:8px;">
+                <div style="font-size:11.5px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;margin-bottom:8px;letter-spacing:0.04em;">
                   Essential Supply Deficit Breakdown
                 </div>
                 <div style="display:flex;flex-direction:column;gap:8px;">
                   ${sh.needs.map(n => `
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);border-radius:8px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface-muted);border:1px solid var(--border);border-radius:8px;">
                       <div>
-                        <div style="font-size:13px;font-weight:600;color:#fff;">${n.item}</div>
-                        <div style="font-size:11px;color:var(--text-secondary-dark);">In Stock: ${n.currentStock} ${n.unit}</div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${n.item}</div>
+                        <div style="font-size:11.5px;color:var(--text-secondary);">In Stock: ${n.currentStock} ${n.unit}</div>
                       </div>
                       <div style="text-align:right;">
                         <span class="status-pill ${n.urgency}" style="font-size:11px;padding:3px 8px;">
@@ -182,24 +182,24 @@
 
               <!-- Inbound Convoy Status -->
               ${sh.incomingConvoyId ? `
-                <div class="info-banner" style="margin-bottom:14px;background:rgba(139,108,246,0.08);border-left-color:var(--violet-500);">
+                <div class="info-banner" style="margin-bottom:14px;background:var(--blue-50);border-left-color:var(--blue-600);border-color:var(--blue-100);">
                   <span style="font-size:16px;">🚛</span>
                   <div class="info-banner-text">
                     <strong>Inbound Relief:</strong> Convoy <strong>${sh.incomingConvoyId}</strong> en route to this shelter.
                   </div>
                 </div>
               ` : `
-                <div class="info-banner" style="margin-bottom:14px;background:rgba(242,84,91,0.08);border-left-color:var(--status-critical);">
+                <div class="info-banner" style="margin-bottom:14px;background:var(--status-critical-bg);border-left-color:var(--status-critical);border-color:var(--status-critical-border);">
                   <span style="font-size:16px;">⚠️</span>
                   <div class="info-banner-text">
-                    <strong>No Active Convoy:</strong> Immediate dispatch required from Hub Alpha.
+                    <strong style="color:var(--status-critical);">No Active Convoy:</strong> Immediate dispatch required from Hub Alpha.
                   </div>
                 </div>
               `}
             </div>
 
             <!-- Card Action Footer -->
-            <div style="display:flex;gap:8px;margin-top:10px;padding-top:12px;border-top:1px solid var(--border-hairline);">
+            <div style="display:flex;gap:8px;margin-top:10px;padding-top:12px;border-top:1px solid var(--border);">
               <button class="btn btn-primary btn-sm" style="flex:1;" onclick="window.location.href='supply-swap.html'">
                 🔄 Allocate via Swap
               </button>

@@ -58,7 +58,7 @@
         <div class="modal-title">🚨 Emergency Convoy Reroute</div>
         <button class="modal-close" onclick="closeRerouteModal()">✕</button>
       </div>
-      <p style="font-size:13px;color:var(--text-secondary-dark);margin-bottom:16px;">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">
         Primary highway NH-58 is submerged at Bridge 7. Select a verified bypass path to broadcast immediately to Convoy C-014.
       </p>
       <div class="form-group">
@@ -82,7 +82,7 @@
         <div class="modal-title">🚧 Broadcast Road Segment Closure</div>
         <button class="modal-close" onclick="closeBlockRoadModal()">✕</button>
       </div>
-      <p style="font-size:13px;color:var(--text-secondary-dark);margin-bottom:16px;">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">
         Immediately flag road segment as impassable and alert all inbound relief convoys in Sector 7.
       </p>
       <div class="form-group">
@@ -127,14 +127,14 @@
       document.getElementById('dashboard-main-title').innerText = "Disaster Operations Command";
 
       container.innerHTML = `
-        <!-- 6 Main KPI Cards (White surface with left accent border per §1.2 & §3.3) -->
+        <!-- 6 Main KPI Cards (White surface with light-blue left accent) -->
         <div class="grid-kpi-6">
           ${window.UI.createKpiCard({
             icon: "🚛",
             eyebrow: "ACTIVE CONVOYS",
             value: "18",
             caption: "14 on route, 3 delayed, 1 risk",
-            accent: "violet"
+            accent: "blue"
           })}
           ${window.UI.createKpiCard({
             icon: "🏠",
@@ -176,11 +176,11 @@
         <!-- Middle Grid: Live Operational Map + Critical Issues & Actions -->
         <div class="grid-2col" style="margin-bottom:var(--space-5);">
           <!-- Live Map Card -->
-          <div class="card-dark" style="padding:0;display:flex;flex-direction:column;min-height:500px;">
-            <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-hairline);">
+          <div class="card" style="padding:0;display:flex;flex-direction:column;min-height:500px;">
+            <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface-soft);">
               <div style="display:flex;align-items:center;gap:8px;">
                 <div class="pulse-dot"></div>
-                <span style="font-size:14px;font-weight:700;color:#fff;">LIVE OPERATION MAP (SECTOR 7)</span>
+                <span style="font-size:13.5px;font-weight:700;color:var(--text-primary);letter-spacing:0.02em;">LIVE OPERATION MAP (SECTOR 7)</span>
               </div>
               <div style="display:flex;gap:6px;">
                 <span class="status-pill safe">4 Convoys</span>
@@ -193,23 +193,23 @@
           <!-- Critical Issues & Command Actions Sidebar -->
           <div style="display:flex;flex-direction:column;gap:var(--space-4);">
             <!-- Critical Issues Card -->
-            <div class="card-dark">
+            <div class="card">
               <div class="card-header">
                 <div class="card-title-group">
                   <span class="section-eyebrow" style="color:var(--status-critical);">ATTENTION REQUIRED</span>
                   <div class="card-title">Critical Issues (Sector 7)</div>
                 </div>
-                <span class="status-pill critical pulse-critical">3 High Severity</span>
+                <span class="status-pill critical">3 High Severity</span>
               </div>
 
               <div style="display:flex;flex-direction:column;gap:12px;">
                 <!-- Issue 1: Shelter S-012 -->
-                <div style="padding:12px;background:rgba(242,84,91,0.08);border:1px solid rgba(242,84,91,0.3);border-radius:10px;">
+                <div style="padding:14px;background:var(--status-critical-bg);border:1px solid var(--status-critical-border);border-radius:10px;">
                   <div style="display:flex;align-items:center;justify-content:space-between;">
-                    <strong style="color:#fff;font-size:14px;">🔴 Shelter S-012 (Ganga Valley)</strong>
+                    <strong style="color:var(--text-primary);font-size:14px;">🔴 Shelter S-012 (Ganga Valley)</strong>
                     <span class="status-pill critical" style="padding:2px 8px;font-size:11px;">1.2 Days Cover</span>
                   </div>
-                  <div style="font-size:12.5px;color:var(--text-secondary-dark);margin:4px 0 8px 0;">
+                  <div style="font-size:13px;color:var(--text-secondary);margin:5px 0 10px 0;">
                     Insulin supply critical (12 vials left). Incoming Convoy C-014 delayed by flash flood.
                   </div>
                   <div style="display:flex;gap:6px;">
@@ -219,12 +219,12 @@
                 </div>
 
                 <!-- Issue 2: Convoy C-014 -->
-                <div style="padding:12px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:10px;">
+                <div style="padding:14px;background:var(--status-caution-bg);border:1px solid var(--status-caution-border);border-radius:10px;">
                   <div style="display:flex;align-items:center;justify-content:space-between;">
-                    <strong style="color:#fff;font-size:14px;">🟠 Convoy C-014 (Rajesh Kumar)</strong>
+                    <strong style="color:var(--text-primary);font-size:14px;">🟠 Convoy C-014 (Rajesh Kumar)</strong>
                     <span class="status-pill caution" style="padding:2px 8px;font-size:11px;">Flood Hazard Ahead</span>
                   </div>
-                  <div style="font-size:12.5px;color:var(--text-secondary-dark);margin:4px 0 8px 0;">
+                  <div style="font-size:13px;color:var(--text-secondary);margin:5px 0 10px 0;">
                     Carrying 100 Insulin Vials & 20 Blood Bags. NH-58 Bridge 7 submerged.
                   </div>
                   <button class="btn btn-sm btn-primary" onclick="openRerouteModal()">[REROUTE CONVOY]</button>
@@ -233,7 +233,7 @@
             </div>
 
             <!-- Command Actions Card -->
-            <div class="card-dark">
+            <div class="card">
               <div class="card-header">
                 <div class="card-title-group">
                   <span class="section-eyebrow">HQ COMMAND ACTIONS</span>
@@ -241,16 +241,16 @@
                 </div>
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <button class="btn btn-secondary" onclick="openRerouteModal()" style="padding:12px 10px;font-size:12.5px;text-align:center;">
+                <button class="btn btn-secondary" onclick="openRerouteModal()" style="padding:12px 10px;font-size:13px;text-align:center;">
                   <span>🔄 Reroute Convoy</span>
                 </button>
-                <button class="btn btn-critical" onclick="openBlockRoadModal()" style="padding:12px 10px;font-size:12.5px;text-align:center;">
+                <button class="btn btn-critical" onclick="openBlockRoadModal()" style="padding:12px 10px;font-size:13px;text-align:center;">
                   <span>🚧 Block Road</span>
                 </button>
-                <button class="btn btn-secondary" onclick="window.location.href='supply-swap.html'" style="padding:12px 10px;font-size:12.5px;text-align:center;">
+                <button class="btn btn-secondary" onclick="window.location.href='supply-swap.html'" style="padding:12px 10px;font-size:13px;text-align:center;">
                   <span>🔄 Emergency Swap</span>
                 </button>
-                <button class="btn btn-primary" onclick="handleEscalateAll()" style="padding:12px 10px;font-size:12.5px;text-align:center;">
+                <button class="btn btn-primary" onclick="handleEscalateAll()" style="padding:12px 10px;font-size:13px;text-align:center;">
                   <span>🚨 Escalate to HQ</span>
                 </button>
               </div>
@@ -261,13 +261,13 @@
         <!-- Bottom Grid: Shelter Priority Table + Live Activity Ticker -->
         <div class="grid-equal-2col">
           <!-- Shelter Situation Card -->
-          <div class="card-dark">
+          <div class="card">
             <div class="card-header">
               <div class="card-title-group">
                 <span class="section-eyebrow">DEMAND MATRIX</span>
                 <div class="card-title">Shelter Situation (Prioritized by Days Cover)</div>
               </div>
-              <a href="shelter-board.html" style="font-size:12px;color:var(--violet-500);font-weight:600;">View All Shelters →</a>
+              <a href="shelter-board.html" style="font-size:12.5px;color:var(--blue-600);font-weight:600;">View All Shelters →</a>
             </div>
 
             <div class="table-container">
@@ -286,14 +286,14 @@
                     <tr>
                       <td>
                         <strong>${sh.id}</strong>
-                        <div style="font-size:11px;color:var(--text-secondary-dark);">${sh.name.split('(')[0]}</div>
+                        <div style="font-size:11.5px;color:var(--text-secondary);">${sh.name.split('(')[0]}</div>
                       </td>
                       <td>
                         <strong style="font-size:15px;color:${sh.daysOfCover < 1.5 ? 'var(--status-critical)' : sh.daysOfCover < 2.5 ? 'var(--status-caution)' : 'var(--status-safe)'};">
                           ${sh.daysOfCover} Days
                         </strong>
                       </td>
-                      <td style="font-size:12.5px;">${sh.needs[0]?.item || 'Trauma Kits'}</td>
+                      <td style="font-size:13px;">${sh.needs[0]?.item || 'Trauma Kits'}</td>
                       <td>${window.UI.createStatusPill(sh.status)}</td>
                       <td>
                         <button class="btn btn-secondary btn-sm" onclick="window.location.href='shelter-board.html'">Triage</button>
@@ -306,7 +306,7 @@
           </div>
 
           <!-- Live Activity Log -->
-          <div class="card-dark">
+          <div class="card">
             <div class="card-header">
               <div class="card-title-group">
                 <span class="section-eyebrow">TELEMETRY STREAM</span>
@@ -315,11 +315,11 @@
               <span class="status-pill safe">Real-time</span>
             </div>
 
-            <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;flex-direction:column;gap:10px;">
               ${state.liveActivities.map(act => `
-                <div style="display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid rgba(53,46,86,0.4);">
-                  <span style="font-family:var(--font-mono);font-size:12px;color:var(--violet-500);font-weight:700;">${act.time}</span>
-                  <div style="font-size:13px;color:var(--text-primary-dark);flex:1;">${act.text}</div>
+                <div style="display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
+                  <span style="font-family:var(--font-mono);font-size:12px;color:var(--blue-600);font-weight:700;">${act.time}</span>
+                  <div style="font-size:13px;color:var(--text-primary);flex:1;">${act.text}</div>
                 </div>
               `).join('')}
             </div>
@@ -334,69 +334,21 @@
       }, 100);
     }
 
-    // 2. DISTRICT ADMIN VIEW
-    function renderDistrictAdminView(container, state) {
-      document.getElementById('eyebrow-role-label').innerText = "DISTRICT LEVEL COORDINATION";
-      document.getElementById('dashboard-main-title').innerText = "District Relief Operations (Dehradun Division)";
-
-      container.innerHTML = `
-        <div class="grid-kpi-4">
-          ${window.UI.createKpiCard({ icon: "🏠", eyebrow: "DISTRICT SHELTERS", value: "4 Monitored", caption: "2 with critical shortages", accent: "critical" })}
-          ${window.UI.createKpiCard({ icon: "🚛", eyebrow: "DISTRICT CONVOYS", value: "4 In Transit", caption: "1 delayed due to flood", accent: "caution" })}
-          ${window.UI.createKpiCard({ icon: "⚠️", eyebrow: "UNVERIFIED HAZARDS", value: "1 Pending", caption: "Requires Admin Verification", accent: "caution" })}
-          ${window.UI.createKpiCard({ icon: "🔄", eyebrow: "DISTRICT SWAPS", value: "3 Active", caption: "2 Warehouses participating", accent: "violet" })}
-        </div>
-
-        <div class="grid-2col">
-          <div class="card-dark">
-            <div class="card-header">
-              <div class="card-title">⚠️ Hazards Awaiting District Verification</div>
-              <span class="status-pill caution">Admin Verification Required</span>
-            </div>
-            <div style="padding:14px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:10px;margin-bottom:12px;">
-              <div class="feed-item-title">Fallen High-Tension Cables (Doiwala Arterial Junction)</div>
-              <div class="feed-item-meta" style="margin:4px 0 10px 0;">Reported by Field Driver DRV-405 • 5 mins ago</div>
-              <p style="font-size:13px;color:var(--text-secondary-dark);margin-bottom:12px;">
-                Electrical poles collapsed across two lanes. State electricity board dispatched for de-energization.
-              </p>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-sm btn-safe" onclick="verifyHazardAction('HAZ-004')">✓ Verify & Confirm Hazard</button>
-                <button class="btn btn-sm btn-critical" onclick="window.disasterStore.toggleRoadBlock('HAZ-004'); window.UI.showToast('Road marked blocked', 'critical');">Mark Road Blocked</button>
-              </div>
-            </div>
-            <a href="hazard-log.html" style="font-size:12px;color:var(--violet-500);font-weight:600;">View Full District Hazard Log →</a>
-          </div>
-
-          <div class="card-dark">
-            <div class="card-header">
-              <div class="card-title">District Warehouse Coordination</div>
-            </div>
-            <p style="font-size:13px;color:var(--text-secondary-dark);margin-bottom:14px;">
-              Hub Alpha has surplus water purifiers (12,500 packs) while Shelter S-012 faces critical shortage.
-            </p>
-            <button class="btn btn-primary" style="width:100%;" onclick="window.location.href='supply-swap.html'">
-              Initiate District Supply Swap →
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    // 3. WAREHOUSE MANAGER VIEW
+    // 2. WAREHOUSE MANAGER VIEW
     function renderWarehouseManagerView(container, state) {
       document.getElementById('eyebrow-role-label').innerText = "LOGISTICS & INVENTORY";
       document.getElementById('dashboard-main-title').innerText = "Warehouse Overview (Hub Alpha & Regional Depot)";
 
       container.innerHTML = `
         <div class="grid-kpi-4">
-          ${window.UI.createKpiCard({ icon: "📦", eyebrow: "TOTAL STOCK", value: "20,050 Units", caption: "Hub Alpha + Depot Bravo", accent: "violet" })}
+          ${window.UI.createKpiCard({ icon: "📦", eyebrow: "TOTAL STOCK", value: "20,050 Units", caption: "Hub Alpha + Depot Bravo", accent: "blue" })}
           ${window.UI.createKpiCard({ icon: "🔴", eyebrow: "CRITICAL DEFICITS", value: "2 Items", caption: "Insulin & Blood Bags", accent: "critical" })}
           ${window.UI.createKpiCard({ icon: "🔄", eyebrow: "ACTIVE SWAPS", value: "3 Transfers", caption: "1 In Transit (Convoy C-014)", accent: "caution" })}
           ${window.UI.createKpiCard({ icon: "🚛", eyebrow: "CONNECTED CONVOYS", value: "4 Trucks", caption: "2 Outgoing, 2 Incoming", accent: "safe" })}
         </div>
 
         <div class="grid-2col">
-          <div class="card-dark">
+          <div class="card">
             <div class="card-header">
               <div class="card-title">Hub Alpha Inventory Status (Available = Total − Reserved)</div>
               <button class="btn btn-secondary btn-sm" onclick="window.location.href='warehouse-inventory.html'">Manage Stock</button>
@@ -409,13 +361,13 @@
             </div>
           </div>
 
-          <div class="card-dark">
+          <div class="card">
             <div class="card-header">
               <div class="card-title">Critical Shelter Needs & Supply Swap</div>
             </div>
-            <div style="padding:14px;background:rgba(139,108,246,0.08);border:1px solid rgba(139,108,246,0.3);border-radius:10px;margin-bottom:14px;">
-              <strong style="color:#fff;font-size:13.5px;">Shelter S-012 Demand: 100 Insulin Vials</strong>
-              <div style="font-size:12px;color:var(--text-secondary-dark);margin:4px 0 10px 0;">
+            <div style="padding:14px;background:var(--blue-50);border:1px solid var(--blue-100);border-radius:10px;margin-bottom:14px;">
+              <strong style="color:var(--text-primary);font-size:13.5px;">Shelter S-012 Demand: 100 Insulin Vials</strong>
+              <div style="font-size:12.5px;color:var(--text-secondary);margin:4px 0 10px 0;">
                 Current cover: 1.2 Days. Hub Alpha currently has 600 available unreserved vials.
               </div>
               <button class="btn btn-primary btn-sm" onclick="window.location.href='supply-swap.html'">Offer Supply via Swap</button>
@@ -426,7 +378,7 @@
       `;
     }
 
-    // 4. FIELD DRIVER VIEW (Simplified Mission Focus §888 & §901)
+    // 3. FIELD DRIVER VIEW
     function renderFieldDriverView(container, state) {
       document.getElementById('eyebrow-role-label').innerText = "FIELD MISSION EXECUTION";
       document.getElementById('dashboard-main-title').innerText = "My Current Mission: Convoy C-014";
@@ -434,31 +386,31 @@
       container.innerHTML = `
         <div style="max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:18px;">
           <!-- Mission Information Card -->
-          <div class="card-dark" style="border-left:5px solid var(--violet-500);">
+          <div class="card" style="border-left:5px solid var(--blue-600);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <span class="status-pill active-violet">🚛 CONVOY C-014</span>
+              <span class="status-pill active-blue">🚛 CONVOY C-014</span>
               <span class="status-pill safe">📡 TELEMETRY ONLINE</span>
             </div>
-            <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px;">
+            <h2 style="font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:4px;">
               Central Logistics Hub Alpha → Shelter S-012
             </h2>
-            <div style="font-size:13.5px;color:var(--text-secondary-dark);margin-bottom:16px;">
+            <div style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">
               Cargo: <strong>100 Insulin Vials + 20 Blood Bags</strong> (Cold Chain: 3.6°C • Safe)
             </div>
 
             <div class="grid-equal-2col" style="margin-bottom:16px;">
-              <div style="padding:10px 14px;background:#151029;border-radius:10px;border:1px solid var(--border-hairline);">
-                <div style="font-size:11px;color:var(--text-secondary-dark);text-transform:uppercase;">Mission Status</div>
+              <div style="padding:12px 14px;background:var(--surface-soft);border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;font-weight:600;">Mission Status</div>
                 <div style="font-size:16px;font-weight:700;color:var(--status-safe);">🟢 ON ROUTE</div>
               </div>
-              <div style="padding:10px 14px;background:#151029;border-radius:10px;border:1px solid var(--border-hairline);">
-                <div style="font-size:11px;color:var(--text-secondary-dark);text-transform:uppercase;">Estimated Arrival</div>
-                <div style="font-size:16px;font-weight:700;color:#fff;">⏱️ 45 MINUTES</div>
+              <div style="padding:12px 14px;background:var(--surface-soft);border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;font-weight:600;">Estimated Arrival</div>
+                <div style="font-size:16px;font-weight:700;color:var(--text-primary);">⏱️ 45 MINUTES</div>
               </div>
             </div>
 
             <!-- Route Alert Notice -->
-            <div class="info-banner" style="border-left-color:var(--status-critical);background:rgba(242,84,91,0.08);">
+            <div class="info-banner" style="border-left-color:var(--status-critical);background:var(--status-critical-bg);border-color:var(--status-critical-border);">
               <span style="font-size:18px;">🚨</span>
               <div class="info-banner-text">
                 <strong style="color:var(--status-critical);">Reroute Advisory:</strong>
@@ -505,12 +457,6 @@
       window.disasterStore.toggleRoadBlock('HAZ-001');
       closeBlockRoadModal();
       window.UI.showToast("Road segment marked BLOCKED and broadcast to all convoys.", "critical");
-      renderRoleSpecificDashboard();
-    }
-
-    function verifyHazardAction(hazardId) {
-      window.disasterStore.verifyHazard(hazardId, "District Admin V. Rawat");
-      window.UI.showToast("Hazard verified successfully.", "safe");
       renderRoleSpecificDashboard();
     }
 

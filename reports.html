@@ -18,7 +18,7 @@
     <div id="navbar-mount" data-active="reports"></div>
 
     <main class="main-content">
-      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <!-- Clean Page Header -->
       <div class="page-header">
         <div class="header-left">
           <span class="section-eyebrow">POST-DISASTER EVALUATION</span>
@@ -37,12 +37,12 @@
         </div>
       </div>
 
-      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <!-- KPI Stat Tiles on White Cards -->
       <div id="kpi-mount" class="grid-kpi-4"></div>
 
       <div class="grid-equal-2col" style="margin-top:var(--space-4);">
         <!-- Road Network Accessibility Card -->
-        <div class="card-dark">
+        <div class="card">
           <div class="card-header">
             <div class="card-title-group">
               <span class="section-eyebrow">INFRASTRUCTURE HEALTH</span>
@@ -59,7 +59,7 @@
         </div>
 
         <!-- Supply Fulfillment by Category -->
-        <div class="card-dark">
+        <div class="card">
           <div class="card-header">
             <div class="card-title-group">
               <span class="section-eyebrow">SUPPLY FULFILLMENT</span>
@@ -78,7 +78,7 @@
       </div>
 
       <!-- Root Cause Incident Analysis Table -->
-      <div class="card-dark" style="margin-top:var(--space-4);">
+      <div class="card" style="margin-top:var(--space-4);">
         <div class="card-header">
           <div class="card-title-group">
             <span class="section-eyebrow">ROOT CAUSE ANALYSIS</span>
@@ -141,7 +141,7 @@
         ${window.UI.createKpiCard({ icon: "📈", eyebrow: "DELIVERY SUCCESS", value: "96.4%", caption: "+2.1% from prior 24h cycle", accent: "safe" })}
         ${window.UI.createKpiCard({ icon: "🛣️", eyebrow: "ROAD ACCESSIBILITY", value: "72% Passable", caption: "18% restricted, 10% blocked", accent: "caution" })}
         ${window.UI.createKpiCard({ icon: "⏱️", eyebrow: "AVG REROUTE DELAY", value: "+28 Mins", caption: "Reduced via alternate passes", accent: "safe" })}
-        ${window.UI.createKpiCard({ icon: "🔄", eyebrow: "SWAP EFFICIENCY", value: "100%", caption: "3 of 3 transfers on track", accent: "violet" })}
+        ${window.UI.createKpiCard({ icon: "🔄", eyebrow: "SWAP EFFICIENCY", value: "100%", caption: "3 of 3 transfers on track", accent: "blue" })}
       `;
     }
 

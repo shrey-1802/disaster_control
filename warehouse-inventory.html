@@ -18,7 +18,7 @@
     <div id="navbar-mount" data-active="warehouse-inventory"></div>
 
     <main class="main-content">
-      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <!-- Clean Page Header -->
       <div class="page-header">
         <div class="header-left">
           <span class="section-eyebrow">SUPPLY DEPOT LOGISTICS</span>
@@ -37,7 +37,7 @@
         </div>
       </div>
 
-      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <!-- KPI Stat Tiles on White Cards -->
       <div id="kpi-mount" class="grid-kpi-4"></div>
 
       <!-- Warehouse Selection Tabs -->
@@ -48,7 +48,7 @@
       </div>
 
       <!-- Main Inventory Table Card -->
-      <div class="card-dark">
+      <div class="card">
         <div class="card-header">
           <div class="card-title-group">
             <span class="section-eyebrow" id="selected-wh-eyebrow">DEPOT DETAILS</span>
@@ -132,7 +132,7 @@
     function renderKpis() {
       const mount = document.getElementById('kpi-mount');
       mount.innerHTML = `
-        ${window.UI.createKpiCard({ icon: "📦", eyebrow: "TOTAL STOCK", value: "20,050 Units", caption: "Across 3 regional logistics depots", accent: "violet" })}
+        ${window.UI.createKpiCard({ icon: "📦", eyebrow: "TOTAL STOCK", value: "20,050 Units", caption: "Across 3 regional logistics depots", accent: "blue" })}
         ${window.UI.createKpiCard({ icon: "❄️", eyebrow: "COLD-CHAIN VIABILITY", value: "3.4°C - 3.8°C", caption: "All insulin & blood storage nominal", accent: "safe" })}
         ${window.UI.createKpiCard({ icon: "🔒", eyebrow: "RESERVED CARGO", value: "6,910 Units", caption: "Locked for scheduled convoys", accent: "caution" })}
         ${window.UI.createKpiCard({ icon: "✅", eyebrow: "FREE AVAILABLE", value: "13,140 Units", caption: "Ready for immediate dispatch", accent: "safe" })}
@@ -163,11 +163,11 @@
         return `
           <tr>
             <td>
-              <strong style="color:#fff;font-size:14px;">${item.name}</strong>
-              <div style="font-size:11px;color:var(--text-secondary-dark);">${item.category}</div>
+              <strong style="color:var(--text-primary);font-size:14px;">${item.name}</strong>
+              <div style="font-size:11.5px;color:var(--text-secondary);">${item.category}</div>
             </td>
             <td>
-              <strong style="font-size:15px;color:#fff;">${item.total.toLocaleString()}</strong> ${item.unit}
+              <strong style="font-size:15px;color:var(--text-primary);">${item.total.toLocaleString()}</strong> ${item.unit}
             </td>
             <td>
               <span style="color:var(--status-caution);font-weight:600;">${item.reserved.toLocaleString()}</span> ${item.unit}
@@ -178,10 +178,10 @@
               </strong> ${item.unit}
             </td>
             <td>
-              ${item.temp !== 'N/A' ? `<span style="color:var(--status-safe);font-weight:600;font-size:12px;">❄️ ${item.temp}</span>` : `<span style="color:var(--text-muted-dark);font-size:12px;">Ambient</span>`}
+              ${item.temp !== 'N/A' ? `<span style="color:var(--status-safe);font-weight:600;font-size:12px;">❄️ ${item.temp}</span>` : `<span style="color:var(--text-muted);font-size:12px;">Ambient</span>`}
             </td>
             <td>
-              <span style="color:var(--text-secondary-dark);font-size:13px;">${item.criticalThreshold.toLocaleString()} ${item.unit}</span>
+              <span style="color:var(--text-secondary);font-size:13px;">${item.criticalThreshold.toLocaleString()} ${item.unit}</span>
             </td>
             <td>
               ${window.UI.createStatusPill(status, isCritical ? 'CRITICAL DEFICIT' : isLow ? 'LOW STOCK' : 'NOMINAL')}

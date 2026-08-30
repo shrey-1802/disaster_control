@@ -18,7 +18,7 @@
     <div id="navbar-mount" data-active="alerts"></div>
 
     <main class="main-content">
-      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <!-- Clean Page Header -->
       <div class="page-header">
         <div class="header-left">
           <span class="section-eyebrow">COMMAND CENTER INCIDENT MATRIX</span>
@@ -37,18 +37,18 @@
         </div>
       </div>
 
-      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <!-- KPI Stat Tiles on White Cards -->
       <div id="kpi-mount" class="grid-kpi-4"></div>
 
       <!-- Alerts Feed Container -->
-      <div class="card-dark" style="margin-top:var(--space-4);">
+      <div class="card" style="margin-top:var(--space-4);">
         <div class="card-header">
           <div class="card-title-group">
             <span class="section-eyebrow">ACTIVE INCIDENTS</span>
             <div class="card-title">Priority Incident Triage List</div>
           </div>
           <div style="display:flex;gap:8px;">
-            <select class="form-control" style="width:170px;padding:6px 10px;font-size:12px;" onchange="filterAlerts(this.value)">
+            <select class="form-control" style="width:170px;padding:6px 10px;font-size:12.5px;" onchange="filterAlerts(this.value)">
               <option value="all">All Alerts</option>
               <option value="critical">Critical Only</option>
               <option value="unacknowledged">Unacknowledged Only</option>
@@ -91,43 +91,41 @@
         const isCrit = a.severity === 'critical';
 
         return `
-          <div style="padding:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);border-left:5px solid ${isCrit ? 'var(--status-critical)' : 'var(--status-caution)'};border-radius:10px;display:flex;flex-direction:column;gap:8px;">
+          <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-left:5px solid ${isCrit ? 'var(--status-critical)' : 'var(--status-caution)'};border-radius:10px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-card);">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
               <div>
-                <h3 class="feed-item-title" style="font-size:16px;">
+                <h3 class="feed-item-title" style="font-size:16px;color:var(--text-primary);">
                   ${isCrit ? '🚨' : '⚠️'} ${a.title}
                 </h3>
-                <div class="feed-item-meta">
+                <div class="feed-item-meta" style="margin-top:2px;">
                   <span>Source: <strong>${a.source}</strong></span>
                   <span>•</span>
                   <span>Timestamp: <strong>${a.timestamp}</strong></span>
                   <span>•</span>
-                  <span>Alert ID: <code style="font-family:var(--font-mono);">${a.id}</code></span>
+                  <span>Alert ID: <code style="font-family:var(--font-mono);background:var(--surface-muted);padding:1px 4px;border-radius:4px;">${a.id}</code></span>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
-                ${a.escalated ? `<span class="status-pill critical pulse-critical" style="font-weight:800;">⚡ ESCALATED TO HQ</span>` : ''}
+                ${a.escalated ? `<span class="status-pill critical" style="font-weight:800;">⚡ ESCALATED TO HQ</span>` : ''}
                 ${a.acknowledged ? `<span class="status-pill safe">✓ Acknowledged</span>` : `<span class="status-pill critical">PENDING</span>`}
                 ${window.UI.createStatusPill(a.severity, a.severity.toUpperCase())}
               </div>
             </div>
 
-            <p style="font-size:13.5px;color:var(--text-secondary-dark);line-height:1.4;margin:4px 0;">
+            <p style="font-size:13.5px;color:var(--text-secondary);line-height:1.4;margin:4px 0;">
               ${a.details}
             </p>
 
-            <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid rgba(53,46,86,0.4);margin-top:4px;">
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid var(--border);margin-top:4px;">
               ${!a.acknowledged ? `
-                <!-- Routine action is primary per §3.2 & §110 -->
                 <button class="btn btn-primary btn-sm" onclick="handleAcknowledgeAlert('${a.id}')">
                   ✓ Acknowledge Alert
                 </button>
               ` : `
-                <span style="font-size:12px;color:var(--status-safe);margin-right:8px;">✓ Acknowledged by Command</span>
+                <span style="font-size:12px;color:var(--status-safe);margin-right:8px;font-weight:600;">✓ Acknowledged by Command</span>
               `}
 
               ${!a.escalated ? `
-                <!-- Consequential action styled secondary/critical per §3.2 -->
                 <button class="btn btn-critical btn-sm" onclick="handleEscalateAlert('${a.id}')">
                   ⚡ Escalate to HQ Command
                 </button>

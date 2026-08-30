@@ -18,7 +18,7 @@
     <div id="navbar-mount" data-active="supply-swap"></div>
 
     <main class="main-content">
-      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <!-- Clean Page Header -->
       <div class="page-header">
         <div class="header-left">
           <span class="section-eyebrow">INTER-WAREHOUSE REBALANCING</span>
@@ -34,10 +34,10 @@
         </div>
       </div>
 
-      <!-- KPI Stat Tiles on White Cards (§1.2 & §3.3) -->
+      <!-- KPI Stat Tiles on White Cards -->
       <div id="kpi-mount" class="grid-kpi-4"></div>
 
-      <!-- Clean Single-Line Info Banner (§3.6 — fixing overlapping text bug §0.2) -->
+      <!-- Clean Single-Line Light Blue Info Banner -->
       <div class="info-banner">
         <span class="info-banner-icon">💡</span>
         <div class="info-banner-text">
@@ -46,8 +46,8 @@
       </div>
 
       <div class="grid-2col" style="margin-top:var(--space-4);">
-        <!-- Left: Warehouse Available Stock Level Bars (§3.4) -->
-        <div class="card-dark">
+        <!-- Left: Warehouse Available Stock Level Bars -->
+        <div class="card">
           <div class="card-header">
             <div class="card-title-group">
               <span class="section-eyebrow">CAPACITY & COVERAGE</span>
@@ -57,12 +57,12 @@
           </div>
 
           <div style="display:flex;flex-direction:column;gap:20px;" id="inventory-bars-container">
-            <!-- Rendered via JavaScript with real graphical progress bars (§3.4) -->
+            <!-- Rendered via JavaScript with real graphical progress bars -->
           </div>
         </div>
 
         <!-- Right: Active Supply Swap Pipeline -->
-        <div class="card-dark">
+        <div class="card">
           <div class="card-header">
             <div class="card-title-group">
               <span class="section-eyebrow">TRANSFER PIPELINE</span>
@@ -143,7 +143,7 @@
     function renderKpis() {
       const mount = document.getElementById('kpi-mount');
       mount.innerHTML = `
-        ${window.UI.createKpiCard({ icon: "🔄", eyebrow: "ACTIVE SWAPS", value: "03 Transfers", caption: "1 In Transit, 1 Approved, 1 Proposed", accent: "violet" })}
+        ${window.UI.createKpiCard({ icon: "🔄", eyebrow: "ACTIVE SWAPS", value: "03 Transfers", caption: "1 In Transit, 1 Approved, 1 Proposed", accent: "blue" })}
         ${window.UI.createKpiCard({ icon: "📦", eyebrow: "SURPLUS WATER", value: "12,500 Packs", caption: "Available at Hub Alpha & Reserve Charlie", accent: "safe" })}
         ${window.UI.createKpiCard({ icon: "🔴", eyebrow: "INSULIN SHORTAGE", value: "500 Vials Deficit", caption: "Depot Bravo & Shelter S-012", accent: "critical" })}
         ${window.UI.createKpiCard({ icon: "⏱️", eyebrow: "AVG TRANSFER TIME", value: "35 Minutes", caption: "Via Eastern Ridge Bypass", accent: "safe" })}
@@ -153,7 +153,7 @@
     function renderSupplySwapPage() {
       const state = window.disasterStore.getState();
 
-      // 1. Render Graphical Progress Bars for Warehouses (§3.4)
+      // 1. Render Graphical Progress Bars for Warehouses
       const barsContainer = document.getElementById('inventory-bars-container');
       const whAlpha = state.warehouses[0]; // Hub Alpha
       const whBravo = state.warehouses[1]; // Depot Bravo
@@ -162,7 +162,7 @@
         <!-- Hub Alpha Section -->
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <strong style="color:#fff;font-size:14px;">🏢 ${whAlpha.name}</strong>
+            <strong style="color:var(--text-primary);font-size:14.5px;">🏢 ${whAlpha.name}</strong>
             <span class="status-pill safe">Surplus Hub</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:12px;">
@@ -191,9 +191,9 @@
         </div>
 
         <!-- Depot Bravo Section -->
-        <div style="padding-top:16px;border-top:1px solid var(--border-hairline);">
+        <div style="padding-top:16px;border-top:1px solid var(--border);">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <strong style="color:#fff;font-size:14px;">🏢 ${whBravo.name}</strong>
+            <strong style="color:var(--text-primary);font-size:14.5px;">🏢 ${whBravo.name}</strong>
             <span class="status-pill critical">Deficit Hub</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:12px;">
@@ -218,30 +218,30 @@
       // 2. Render Active Supply Swaps Timeline
       const swapsContainer = document.getElementById('swaps-timeline-container');
       swapsContainer.innerHTML = state.supplySwaps.map(sw => `
-        <div style="padding:14px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);border-radius:10px;display:flex;flex-direction:column;gap:8px;">
+        <div style="padding:14px;background:var(--surface-soft);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;align-items:center;justify-content:space-between;">
-            <strong style="color:var(--violet-500);font-size:14px;">${sw.id}</strong>
+            <strong style="color:var(--blue-700);font-size:14px;">${sw.id}</strong>
             ${window.UI.createStatusPill(sw.status, sw.status.replace('_', ' ').toUpperCase())}
           </div>
 
-          <div style="font-size:13.5px;font-weight:700;color:#fff;">
+          <div style="font-size:13.5px;font-weight:700;color:var(--text-primary);">
             ${sw.quantity} ${sw.unit} of ${sw.item}
           </div>
 
-          <div style="font-size:12.5px;color:var(--text-secondary-dark);">
+          <div style="font-size:12.5px;color:var(--text-secondary);">
             <span>${sw.fromWarehouseName}</span> → <span>${sw.toWarehouseName}</span>
           </div>
 
-          <div style="font-size:11.5px;color:var(--text-muted-dark);">
+          <div style="font-size:12px;color:var(--text-muted);">
             Reason: ${sw.reason}
           </div>
 
           <!-- Progress Bar for In-Transit Swaps -->
           <div style="margin-top:4px;">
             <div class="bar-track" style="height:6px;">
-              <div class="bar-fill fill-violet" style="width:${sw.progressPct}%;"></div>
+              <div class="bar-fill fill-blue" style="width:${sw.progressPct}%;"></div>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-secondary-dark);margin-top:4px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--text-secondary);margin-top:4px;">
               <span>Progress: ${sw.progressPct}%</span>
               <span>${sw.convoyId ? `Assigned Convoy: ${sw.convoyId}` : 'Awaiting Truck'}</span>
             </div>

@@ -1,71 +1,85 @@
 /**
  * DISISTA CONTROL — Design System Tokens
- * Dark Command Center Theme (v2 locked system)
+ * White + Light Blue Production Theme (70% White/Neutral + 30% Light Blue)
+ * Single Source of Truth from DISISTA_CONTROL_FINAL_UI_UX_WHITE_LIGHT_BLUE.md
  */
 
 :root {
-  /* Base Surfaces */
-  --bg-app:                #151029;   /* App background, deep navy-indigo */
-  --bg-panel:              #1E1839;   /* Floating panels on map, sidebars, popovers */
-  --surface-card:          #221C40;   /* Default dark card fill for dense content */
-  --surface-card-hover:    #2A234E;   /* Dark card hover state */
-  --surface-card-alt:      #FFFFFF;   /* Pure white light cards reserved for KPI stat tiles */
-  --surface-card-alt-hover:#F7F5FC;   /* Light card hover */
+  /* =========================
+     BASE / 70% WHITE SYSTEM
+     ========================= */
+  --bg-app:                #F7FAFC;   /* Crisp near-white app background */
+  --surface:               #FFFFFF;   /* Pure white cards, tables, panels */
+  --surface-soft:          #F8FBFF;   /* Subtle light-blue grouped surface */
+  --surface-muted:         #F2F6F9;   /* Neutral secondary surface */
+  --surface-hover:         #EDF5FC;   /* Table/card row hover */
   
-  /* Borders */
-  --border-hairline:       #352E56;   /* Card borders on dark surfaces */
-  --border-hairline-light: #E7E3F5;   /* Card borders on light surfaces */
-  --border-active:         #8B6CF6;   /* Active border highlight */
+  --border:                #E2EAF2;   /* Neutral border */
+  --border-strong:         #D2DEE8;   /* Stronger section border */
+  --border-hairline:       #E2EAF2;   /* Standard border alias */
+  --border-hairline-light: #E2EAF2;
 
-  /* Primary Accent - Violet */
-  --violet-500:            #8B6CF6;   /* Primary actions, active nav pill, focus rings */
-  --violet-600:            #7C5CE8;   /* Hover / active shade */
-  --violet-700:            #6646D0;   /* Pressed / deep shade */
-  --violet-100:            #EDE7FE;   /* Light accent fill (chips on white cards) */
-  --violet-50:             #F5F2FE;   /* Very soft violet tint */
+  /* =========================
+     LIGHT BLUE / 30% SYSTEM
+     ========================= */
+  --blue-50:               #EFF8FF;   /* Soft active pill background, table headers */
+  --blue-100:              #DCEFFF;   /* Border highlight, chips */
+  --blue-200:              #B9DEFF;
+  --blue-300:              #8CC9F5;
+  --blue-500:              #4EA8E8;   /* Section accents, focus rings */
+  --blue-600:              #318ED0;   /* Primary actions, active icons */
+  --blue-700:              #2474AE;   /* Primary button hover */
+  --blue-800:              #1E5F8F;
 
-  /* Status Colors — Strict 3-Tier Rule (Safe, Caution, Critical) + Info Blue */
-  --status-safe:           #34D399;   /* Green — safe / confirmed / healthy */
-  --status-safe-bg:         rgba(52, 211, 153, 0.15);
-  --status-safe-pill-bg:    #DFF7EC;
-  --status-safe-border:     #2BB380;
+  /* Accent Aliases */
+  --primary-accent:        #318ED0;
+  --primary-accent-hover:  #2474AE;
 
-  --status-caution:        #F5A623;   /* Amber — caution / rerouted / warning / delayed */
-  --status-caution-bg:      rgba(245, 166, 35, 0.15);
-  --status-caution-pill-bg: #FCEBC9;
-  --status-caution-border:  #D98E16;
+  /* =========================
+     TEXT
+     ========================= */
+  --text-primary:          #172B3A;   /* Main headings, titles, primary labels */
+  --text-primary-dark:     #172B3A;   /* Compatibility alias */
+  --text-secondary:        #5F7180;   /* Body text, descriptions */
+  --text-secondary-dark:   #5F7180;   /* Compatibility alias */
+  --text-muted:            #8A9AA8;   /* Eyebrows, timestamps, placeholders */
+  --text-muted-dark:       #8A9AA8;   /* Compatibility alias */
+  --text-on-blue:          #FFFFFF;
 
-  --status-critical:       #F2545B;   /* Red — critical / blocked / isolated / high risk */
-  --status-critical-bg:     rgba(242, 84, 91, 0.15);
-  --status-critical-pill-bg:#FBDDDF;
-  --status-critical-border: #D63B42;
+  /* =========================
+     STATUS (Strict 3-Tier + Info)
+     ========================= */
+  --status-safe:           #20A66A;   /* Green — safe / confirmed / healthy */
+  --status-safe-bg:         #E8F8F0;
+  --status-safe-pill-bg:    #E8F8F0;
+  --status-safe-border:     #A3E8C4;
 
-  --status-info:           #4EA1F7;   /* Blue — informational notices, sync notices */
-  --status-info-bg:         rgba(78, 161, 247, 0.15);
-  --status-info-pill-bg:    #E2EFFF;
-  --status-info-border:     #3B8AE0;
+  --status-caution:        #D99116;   /* Amber — caution / rerouted / warning / delayed */
+  --status-caution-bg:      #FFF4DB;
+  --status-caution-pill-bg: #FFF4DB;
+  --status-caution-border:  #F7D78E;
 
-  /* Text on Dark Backgrounds */
-  --text-primary-dark:     #F5F3FC;   /* Main headings, feed titles, primary labels */
-  --text-secondary-dark:   #A79FC7;   /* Body text, metadata, descriptions */
-  --text-muted-dark:       #6E6690;   /* Eyebrow labels, timestamps, placeholders */
+  --status-critical:       #D94B55;   /* Red — critical / blocked / isolated */
+  --status-critical-bg:     #FDEBED;
+  --status-critical-pill-bg:#FDEBED;
+  --status-critical-border: #F7B5BA;
 
-  /* Text on Light Cards (Stat Tiles) */
-  --text-primary-light:    #1E1839;   /* Stat values, dark text on white */
-  --text-secondary-light:  #6B6690;   /* Stat captions, secondary light text */
-  --text-muted-light:      #8F89B2;   /* Subtle labels on white cards */
+  --status-info:           #318ED0;   /* Blue — informational notices */
+  --status-info-bg:         #EFF8FF;
+  --status-info-pill-bg:    #EFF8FF;
+  --status-info-border:     #B9DEFF;
 
-  /* Radii */
-  --radius-sm:             6px;
-  --radius:                14px;
-  --radius-lg:             20px;
+  /* =========================
+     SHAPE & RADIUS
+     ========================= */
+  --radius-sm:             8px;
+  --radius:                12px;
+  --radius-lg:             16px;
   --radius-pill:           999px;
 
-  /* Typography */
-  --font-sans:             'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono:             'JetBrains Mono', 'IBM Plex Mono', monospace;
-
-  /* Spacing Scale */
+  /* =========================
+     SPACING
+     ========================= */
   --space-1:               4px;
   --space-2:               8px;
   --space-3:               12px;
@@ -74,25 +88,32 @@
   --space-6:               32px;
   --space-7:               48px;
 
-  /* Font Sizes */
+  /* =========================
+     TYPOGRAPHY
+     ========================= */
+  --font-sans:             'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:             'JetBrains Mono', 'IBM Plex Mono', monospace;
+
   --text-xs:               12px;
-  --text-sm:               13.5px;
-  --text-base:             15px;
-  --text-lg:               18px;
-  --text-xl:               22px;
+  --text-sm:               14px;
+  --text-base:             16px;
+  --text-lg:               19px;
+  --text-xl:               23px;
   --text-2xl:              28px;
   --text-3xl:              34px;
 
-  /* Shadows & Elevation */
-  --shadow-card:           0 4px 20px rgba(0, 0, 0, 0.35);
-  --shadow-dropdown:       0 10px 30px rgba(0, 0, 0, 0.45);
-  --shadow-glow-violet:    0 0 0 3px rgba(139, 108, 246, 0.35);
-  --shadow-glow-critical:  0 0 0 3px rgba(242, 84, 91, 0.35);
-  --shadow-glow-safe:      0 0 0 3px rgba(52, 211, 153, 0.35);
+  /* =========================
+     ELEVATION & FOCUS
+     ========================= */
+  --shadow-card:           0 2px 10px rgba(30, 70, 100, 0.07);
+  --shadow-hover:          0 6px 20px rgba(30, 70, 100, 0.10);
+  --shadow-dropdown:       0 10px 30px rgba(30, 70, 100, 0.14);
+  --focus-ring:            0 0 0 3px rgba(78, 168, 232, 0.25);
 
-  /* Transitions & Motion */
+  /* =========================
+     MOTION
+     ========================= */
   --motion-fast:           120ms;
   --motion-base:           200ms;
-  --motion-smooth:         350ms;
   --ease:                  cubic-bezier(0.2, 0.8, 0.2, 1);
 }

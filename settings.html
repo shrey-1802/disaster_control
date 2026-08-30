@@ -18,7 +18,7 @@
     <div id="navbar-mount" data-active="settings"></div>
 
     <main class="main-content">
-      <!-- Clean Page Header (NO ghosted duplicate titles §0.1) -->
+      <!-- Clean Page Header -->
       <div class="page-header">
         <div class="header-left">
           <span class="section-eyebrow">PLATFORM CONFIGURATION</span>
@@ -39,7 +39,7 @@
 
       <div class="grid-equal-2col">
         <!-- Card 1: Operator & Role Profile -->
-        <div class="card-dark">
+        <div class="card">
           <div class="card-header">
             <div class="card-title-group">
               <span class="section-eyebrow">OPERATOR PROFILE</span>
@@ -55,17 +55,17 @@
 
           <div class="form-group">
             <label class="form-label">Operator Badge ID</label>
-            <input type="text" id="set-opid" class="form-control" value="HQ-CMD-001" readonly style="opacity:0.8;">
+            <input type="text" id="set-opid" class="form-control" value="HQ-CMD-001" readonly style="background:var(--surface-muted);">
           </div>
 
           <div class="form-group">
             <label class="form-label">Active Role</label>
-            <input type="text" id="set-role" class="form-control" value="1. Control Room Commander (HQ)" readonly style="opacity:0.8;">
+            <input type="text" id="set-role" class="form-control" value="1. Control Room Commander (HQ)" readonly style="background:var(--surface-muted);">
           </div>
         </div>
 
         <!-- Card 2: Sector & Indian PIN Code Localization -->
-        <div class="card-dark">
+        <div class="card">
           <div class="card-header">
             <div class="card-title-group">
               <span class="section-eyebrow">GEOGRAPHIC SECTOR</span>
@@ -81,18 +81,18 @@
 
           <div class="form-group">
             <label class="form-label">Assigned Disaster Division</label>
-            <input type="text" id="set-district" class="form-control" value="Dehradun - Rishikesh Disaster Division" readonly style="opacity:0.8;">
+            <input type="text" id="set-district" class="form-control" value="Dehradun - Rishikesh Disaster Division" readonly style="background:var(--surface-muted);">
           </div>
 
           <div class="form-group">
             <label class="form-label">State Emergency Grid</label>
-            <input type="text" id="set-state" class="form-control" value="Uttarakhand (Himalayan Corridor)" readonly style="opacity:0.8;">
+            <input type="text" id="set-state" class="form-control" value="Uttarakhand (Himalayan Corridor)" readonly style="background:var(--surface-muted);">
           </div>
         </div>
       </div>
 
-      <!-- Card 3: Offline Telemetry & Field Mode Queue (§1028-§1041) -->
-      <div class="card-dark" style="margin-top:var(--space-4);">
+      <!-- Card 3: Offline Telemetry & Field Mode Queue -->
+      <div class="card" style="margin-top:var(--space-4);">
         <div class="card-header">
           <div class="card-title-group">
             <span class="section-eyebrow">RESILIENT TELEMETRY</span>
@@ -103,14 +103,14 @@
           </button>
         </div>
 
-        <p style="font-size:13px;color:var(--text-secondary-dark);margin-bottom:14px;">
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">
           When mobile relief convoys lose 4G/satellite connectivity in mountain valleys, field reports are stored locally in IndexedDB/LocalStorage and automatically synchronized once connection returns.
         </p>
 
-        <div id="sync-queue-status-box" style="padding:14px;background:#151029;border:1px solid var(--border-hairline);border-radius:10px;display:flex;align-items:center;justify-content:space-between;">
+        <div id="sync-queue-status-box" style="padding:14px;background:var(--surface-soft);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:space-between;">
           <div>
-            <div style="font-size:14px;font-weight:700;color:#fff;" id="sync-count-text">0 Pending Telemetry Packets</div>
-            <div style="font-size:12px;color:var(--status-safe);margin-top:2px;">Grid connection: Online (Ping: 18ms)</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text-primary);" id="sync-count-text">0 Pending Telemetry Packets</div>
+            <div style="font-size:12px;color:var(--status-safe);margin-top:2px;font-weight:600;">Grid connection: Online (Ping: 18ms)</div>
           </div>
           <button class="btn btn-secondary btn-sm" onclick="addSampleOfflineItem()">+ Simulate Offline Field Report</button>
         </div>
