@@ -125,7 +125,7 @@
         ${window.UI.createKpiCard({ icon: "⚠️", eyebrow: "ACTIVE HAZARDS", value: "04 Tracked", caption: "2 Critical, 1 High, 1 Medium", accent: "caution" })}
         ${window.UI.createKpiCard({ icon: "🌊", eyebrow: "FLOOD POINTS", value: "01 Submerged", caption: "NH-58 River Bridge overtopped", accent: "critical" })}
         ${window.UI.createKpiCard({ icon: "🚧", eyebrow: "BLOCKED ROADS", value: "03 Closed", caption: "Bypass reroutes active", accent: "critical" })}
-        ${window.UI.createKpiCard({ icon: "⏳", eyebrow: "PENDING VERIFY", value: "01 Pending", caption: "Requires District Admin review", accent: "caution" })}
+        ${window.UI.createKpiCard({ icon: "⏳", eyebrow: "PENDING VERIFY", value: "01 Pending", caption: "Requires HQ Command review", accent: "caution" })}
       `;
     }
 
@@ -239,7 +239,7 @@
     function handleVerifyHazard(id) {
       const user = window.authManager.getCurrentUser();
       window.disasterStore.verifyHazard(id, user.name);
-      window.UI.showToast("Hazard verified by District Admin.", "safe");
+      window.UI.showToast("Hazard verified by Command Officer.", "safe");
       renderHazardFeed();
       renderKpis();
     }

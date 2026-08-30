@@ -1,5 +1,6 @@
 /**
  * DISISTA CONTROL — Authentication, Session & Role-Based Access Control (RBAC)
+ * 3 Operational Roles: Control Room, Warehouse Manager, Field Driver
  */
 
 const AUTH_STORAGE_KEY = 'DISISTA_CONTROL_AUTH_SESSION';
@@ -19,23 +20,6 @@ const ROLES = {
       canEscalateHQ: true,
       canManageInventory: true,
       canDispatchConvoys: true,
-      fieldModeOnly: false
-    }
-  },
-  district_admin: {
-    id: "district_admin",
-    title: "District Disaster Admin",
-    badge: "District Admin",
-    icon: "🏛️",
-    description: "Coordinate relief operations, verify hazards, and manage shelters within the district.",
-    permissions: {
-      canRerouteGlobal: false,
-      canBlockRoads: false,
-      canVerifyHazards: true,
-      canApproveSwaps: true,
-      canEscalateHQ: true,
-      canManageInventory: false,
-      canDispatchConvoys: false,
       fieldModeOnly: false
     }
   },
@@ -84,7 +68,13 @@ class AuthManager {
     try {
       const saved = localStorage.getItem(AUTH_STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // If legacy session had district_admin, fall back to control_room
+        if (parsed.role === 'district_admin') {
+          parsed.role = 'control_room';
+          parsed.roleTitle = 'Control Room Commander';
+        }
+        return parsed;
       }
     } catch (e) {
       console.warn("Error loading auth session:", e);
@@ -134,7 +124,6 @@ class AuthManager {
   quickDemoLogin(roleId) {
     const defaultCredentials = {
       control_room: { id: "HQ-CMD-001", name: "HQ Commander A. Sharma", pin: "248001" },
-      district_admin: { id: "DST-ADM-108", name: "District Admin V. Rawat", pin: "248001" },
       warehouse_manager: { id: "WH-MGR-02", name: "Logistics Lead S. Negi", pin: "248001" },
       field_driver: { id: "DRV-401", name: "Rajesh Kumar (Convoy C-014)", pin: "248001" }
     };
