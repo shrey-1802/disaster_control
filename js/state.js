@@ -421,6 +421,7 @@ class DisasterControlStore {
   constructor() {
     this.state = this.loadState();
     this.listeners = [];
+    setTimeout(() => this.initBackendSync(), 100);
   }
 
   loadState() {
@@ -647,6 +648,74 @@ class DisasterControlStore {
     return count;
   }
 
+  initBackendSync() {
+    if (window.apiClient) {
+      // 1. Initial State Fetch if live backend is online
+      this.syncWithBackend();
+
+      // 2. Subscribe to WebSocket real-time event updates
+      window.apiClient.subscribeWs((msg) => {
+        this.handleRealTimeEvent(msg);
+      });
+    }
+  }
+
+  async syncWithBackend() {
+    try {
+      if (!window.apiClient) return;
+      const data = await window.apiClient.getMapOverview();
+      if (data) {
+        if (data.warehouses && data.warehouses.length > 0) {
+          this.state.warehouses = data.warehouses.map(w => ({
+            id: w.code || w.id,
+            name: w.name,
+            locationName: w.locationName || w.name,
+            lat: w.latitude,
+            lng: w.longitude,
+            capacity: w.capacityUnits || 50000,
+            inventory: w.inventory || []
+          }));
+        }
+        if (data.hazards && data.hazards.length > 0) {
+          this.state.hazards = data.hazards.map(h => ({
+            id: h.code || h.id,
+            type: (h.type || 'flash_flood').toLowerCase(),
+            typeName: h.typeName,
+            locationName: h.locationName,
+            lat: h.latitude,
+            lng: h.longitude,
+            severity: (h.severity || 'high').toLowerCase(),
+            verified: h.status === 'VERIFIED',
+            roadBlocked: h.roadClosure ?? true,
+            description: h.description
+          }));
+        }
+        if (data.convoys && data.convoys.length > 0) {
+          this.state.convoys = data.convoys.map(c => ({
+            id: c.code || c.id,
+            code: c.code,
+            driverName: c.driverName || 'Relief Driver',
+            originName: c.originName || 'Hub Alpha',
+            destName: c.destName || 'Relief Shelter',
+            status: (c.status || 'en_route').toLowerCase(),
+            currentLat: c.currentLat,
+            currentLng: c.currentLng,
+            etaMinutes: c.etaMinutes || 30
+          }));
+        }
+        this.notify();
+      }
+    } catch {
+      // Backend offline or booting; retains local state
+    }
+  }
+
+  handleRealTimeEvent(msg) {
+    if (!msg || !msg.event) return;
+    console.log('⚡ [DISISTA TELEMETRY EVENT]', msg.event, msg.payload);
+    this.syncWithBackend();
+  }
+
   resetToDefault() {
     this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
     this.notify();
@@ -655,3 +724,4 @@ class DisasterControlStore {
 
 // Global Store Instance
 window.disasterStore = new DisasterControlStore();
+

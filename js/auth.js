@@ -1,6 +1,7 @@
 /**
  * DISISTA CONTROL — Authentication, Session & Role-Based Access Control (RBAC)
  * 3 Operational Roles: Control Room, Warehouse Manager, Field Driver
+ * Connected to live Fastify Backend with offline fallback.
  */
 
 const AUTH_STORAGE_KEY = 'DISISTA_CONTROL_AUTH_SESSION';
@@ -62,6 +63,7 @@ const ROLES = {
 class AuthManager {
   constructor() {
     this.session = this.loadSession();
+    this.verifyLiveSession();
   }
 
   loadSession() {
@@ -69,7 +71,6 @@ class AuthManager {
       const saved = localStorage.getItem(AUTH_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // If legacy session had district_admin, fall back to control_room
         if (parsed.role === 'district_admin') {
           parsed.role = 'control_room';
           parsed.roleTitle = 'Control Room Commander';
@@ -86,6 +87,7 @@ class AuthManager {
       name: "Commander A. Sharma",
       pincode: "248001",
       district: "Dehradun - Rishikesh Disaster Division",
+      state: "Uttarakhand",
       authenticated: true,
       loginTime: new Date().toISOString()
     };
@@ -96,10 +98,63 @@ class AuthManager {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
   }
 
-  login(role, operatorId, pincode, customName) {
+  async verifyLiveSession() {
+    if (window.apiClient && window.apiClient.getToken()) {
+      try {
+        const user = await window.apiClient.getMe();
+        if (user) {
+          const roleMapping = {
+            'CONTROL_ROOM': 'control_room',
+            'WAREHOUSE_MANAGER': 'warehouse_manager',
+            'FIELD_DRIVER': 'field_driver'
+          };
+          const mappedRole = roleMapping[user.role] || this.session.role;
+          this.session.role = mappedRole;
+          this.session.name = user.name || this.session.name;
+          this.session.operatorId = user.operatorId || this.session.operatorId;
+          this.session.pincode = user.pincode || this.session.pincode;
+          this.saveSession(this.session);
+        }
+      } catch {
+        // Backend offline or token expired
+      }
+    }
+  }
+
+  async login(role, operatorId, pincode, customName, password) {
     const roleConfig = ROLES[role] || ROLES.control_room;
-    
-    // Resolve location from pincode using DisasterStore
+
+    // 1. Attempt Live Backend API Login
+    if (window.apiClient) {
+      try {
+        const res = await window.apiClient.login(
+          operatorId || (role === 'control_room' ? 'HQ-CMD-001' : role === 'warehouse_manager' ? 'WH-MGR-02' : 'DRV-401'),
+          password || 'disaster2026',
+          role.toUpperCase(),
+          pincode || '248001'
+        );
+
+        if (res?.user) {
+          const session = {
+            role: roleConfig.id,
+            roleTitle: roleConfig.title,
+            operatorId: res.user.operatorId,
+            name: res.user.name,
+            pincode: res.user.pincode || pincode || "248001",
+            district: res.user.district || "Dehradun Division",
+            state: res.user.state || "Uttarakhand",
+            authenticated: true,
+            loginTime: new Date().toISOString()
+          };
+          this.saveSession(session);
+          return session;
+        }
+      } catch (err) {
+        console.warn('Backend login fallback to local session:', err.message);
+      }
+    }
+
+    // 2. Local Fallback
     let sector = null;
     if (window.disasterStore) {
       sector = window.disasterStore.resolvePincode(pincode || "248001");
@@ -129,10 +184,13 @@ class AuthManager {
     };
 
     const cred = defaultCredentials[roleId] || defaultCredentials.control_room;
-    return this.login(roleId, cred.id, cred.pin, cred.name);
+    return this.login(roleId, cred.id, cred.pin, cred.name, 'disaster2026');
   }
 
   logout() {
+    if (window.apiClient) {
+      window.apiClient.logout();
+    }
     localStorage.removeItem(AUTH_STORAGE_KEY);
     window.location.href = "login.html";
   }
