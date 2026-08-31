@@ -1,14 +1,15 @@
 /**
  * DISISTA CONTROL — Geospatial Map Engine
- * Powered by Leaflet GIS + CartoDB / TomTom Telemetry
- * High-performance, multi-fallback, zero-blank-screen architecture.
+ * Dual-Mode Ultra-Resilient Engine:
+ * Mode 1: Leaflet CartoDB / TomTom Telemetry Tiles (when CDN is reachable)
+ * Mode 2: Self-Contained Interactive Geospatial Vector GIS Telemetry Map (100% offline & instant)
  */
 
 class DisasterMapEngine {
   constructor(containerId, options = {}) {
     this.containerId = containerId;
     this.options = Object.assign({
-      center: [30.2200, 78.1800], // Default: Dehradun - Rishikesh Disaster Corridor
+      center: [30.2200, 78.1800], // Sector 7: Dehradun - Rishikesh Disaster Corridor
       zoom: 11,
       interactive: true,
       showControls: true
@@ -32,19 +33,22 @@ class DisasterMapEngine {
     };
 
     this.onSelectEntity = options.onSelectEntity || null;
-    this._isLoadingLeaflet = false;
+    this.currentZoom = 1.0;
+    this.panOffset = { x: 0, y: 0 };
+    this.isDragging = false;
+    this.dragStart = { x: 0, y: 0 };
   }
 
   init() {
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
-    // Ensure container has visible dimensions
     if (!container.style.height && container.clientHeight === 0) {
       container.style.height = "480px";
     }
 
-    if (typeof window.L !== 'undefined') {
+    // Try Leaflet if window.L is available, otherwise render rich interactive vector map immediately
+    if (typeof window.L !== 'undefined' && typeof window.L.map === 'function') {
       try {
         this.initLeafletMap(container);
       } catch (err) {
@@ -52,56 +56,30 @@ class DisasterMapEngine {
         this.initInteractiveVectorMap(container);
       }
     } else {
-      this.loadLeafletAndInit(container);
+      this.initInteractiveVectorMap(container);
+      // Attempt background dynamic upgrade if CDN becomes reachable
+      this.tryBackgroundLeafletUpgrade(container);
     }
   }
 
-  loadLeafletAndInit(container) {
-    if (this._isLoadingLeaflet) return;
-    this._isLoadingLeaflet = true;
+  tryBackgroundLeafletUpgrade(container) {
+    if (typeof window.L !== 'undefined') return;
 
-    // Show clean loading state while fetching map engine
-    container.innerHTML = `
-      <div style="width:100%;height:100%;min-height:380px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F8FBFF;color:#172B3A;gap:12px;border:1px solid #E2EAF2;border-radius:12px;">
-        <div style="width:36px;height:36px;border:3px solid #E2EAF2;border-top-color:#1D63ED;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-        <div style="font-weight:700;font-size:14px;color:#172B3A;">Connecting to Geospatial Telemetry Grid...</div>
-        <style>@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>
-      </div>
-    `;
-
-    // Dynamic multi-CDN injector
-    const loadScript = (url, fallbackUrl) => {
-      const script = document.createElement('script');
-      script.src = url;
-      script.onload = () => {
-        if (typeof window.L !== 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    script.onload = () => {
+      if (typeof window.L !== 'undefined' && typeof window.L.map === 'function') {
+        try {
           this.initLeafletMap(container);
-        } else {
-          this.initInteractiveVectorMap(container);
+        } catch (e) {
+          // Keep vector map if Leaflet initialization throws
         }
-      };
-      script.onerror = () => {
-        if (fallbackUrl) {
-          loadScript(fallbackUrl, null);
-        } else {
-          this.initInteractiveVectorMap(container);
-        }
-      };
-      document.head.appendChild(script);
+      }
     };
-
-    // Ensure Leaflet CSS is loaded
-    if (!document.querySelector('link[href*="leaflet"]')) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
-      document.head.appendChild(link);
-    }
-
-    loadScript(
-      'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
-      'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'
-    );
+    script.onerror = () => {
+      // Retain the interactive vector map
+    };
+    document.head.appendChild(script);
   }
 
   initLeafletMap(container) {
@@ -111,7 +89,6 @@ class DisasterMapEngine {
       return;
     }
 
-    // 1. Properly clean any prior map instance on this container
     if (this.map) {
       try {
         this.map.remove();
@@ -126,7 +103,6 @@ class DisasterMapEngine {
     }
     container.innerHTML = '';
 
-    // 2. Instantiate Leaflet Map
     this.map = L.map(container, {
       center: this.options.center,
       zoom: this.options.zoom,
@@ -134,7 +110,6 @@ class DisasterMapEngine {
       attributionControl: false
     });
 
-    // 3. Reliable Crisp Basemap (CartoDB Voyager + OSM Fallback)
     const cartoTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
       subdomains: 'abcd',
@@ -158,7 +133,6 @@ class DisasterMapEngine {
       L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     }
 
-    // 4. Feature Groups for Pins & Routes
     this.layers.routes = L.featureGroup().addTo(this.map);
     this.layers.warehouses = L.featureGroup().addTo(this.map);
     this.layers.shelters = L.featureGroup().addTo(this.map);
@@ -167,14 +141,13 @@ class DisasterMapEngine {
 
     this.renderAllData();
 
-    // 5. Responsive Size Invalidation
     const refreshSizes = () => {
       if (this.map) {
         this.map.invalidateSize();
       }
     };
 
-    setTimeout(refreshSizes, 50);
+    setTimeout(refreshSizes, 60);
     setTimeout(refreshSizes, 200);
     setTimeout(refreshSizes, 500);
 
@@ -188,7 +161,7 @@ class DisasterMapEngine {
 
     Object.values(this.layers).forEach(layer => layer && layer.clearLayers());
 
-    // 1. Render Routes (Primary Corridor & Mountain Bypass)
+    // 1. Render Routes
     if (this.activeFilters.routes) {
       this.renderCorridorRoutes(L);
     }
@@ -270,7 +243,6 @@ class DisasterMapEngine {
   }
 
   renderCorridorRoutes(L) {
-    // Primary NH-58 Arterial Route (Blocked at Bridge 7)
     const nh58Path = [
       [30.3450, 78.0550], // Hub Alpha
       [30.2800, 78.1100],
@@ -284,9 +256,8 @@ class DisasterMapEngine {
       weight: 5,
       opacity: 0.85,
       dashArray: '8, 8'
-    }).addTo(this.layers.routes).bindPopup('<strong>NH-58 River Crossing (Bridge 7)</strong><br><span style="color:#DC2626;font-weight:700;">BLOCKED: Flash Flood Overtopping</span>');
+    }).addTo(this.layers.routes);
 
-    // Eastern Mountain Ridge Bypass (Active Safe Route)
     const bypassPath = [
       [30.3450, 78.0550], // Hub Alpha
       [30.3100, 78.1800],
@@ -299,7 +270,7 @@ class DisasterMapEngine {
       color: '#10B981',
       weight: 4,
       opacity: 0.9
-    }).addTo(this.layers.routes).bindPopup('<strong>Route 9-East: Mountain Ridge Pass</strong><br><span style="color:#10B981;font-weight:700;">ACTIVE & CLEAR: Verified Bypass</span>');
+    }).addTo(this.layers.routes);
   }
 
   setLayerFilter(layerKey, isVisible) {
@@ -314,6 +285,12 @@ class DisasterMapEngine {
           this.map.removeLayer(this.layers[layerKey]);
         }
       }
+    } else {
+      // Update vector fallback map layers
+      const elements = document.querySelectorAll(`[data-layer="${layerKey}"]`);
+      elements.forEach(el => {
+        el.style.display = isVisible ? '' : 'none';
+      });
     }
   }
 
@@ -323,70 +300,186 @@ class DisasterMapEngine {
     }
   }
 
+  /* =========================================================================
+     STANDALONE INTERACTIVE VECTOR GIS TELEMETRY MAP (100% Offline & Reliable)
+     ========================================================================= */
   initInteractiveVectorMap(container) {
+    const state = (window.disasterStore && window.disasterStore.getState()) || {};
+    const warehouses = state.warehouses || [
+      { id: "WH-001", name: "Central Hub Alpha", locationName: "Dehradun North", x: 130, y: 95, capacity: 50000 },
+      { id: "WH-002", name: "Regional Depot Bravo", locationName: "Rishikesh Bypass", x: 450, y: 245, capacity: 35000 },
+      { id: "WH-003", name: "Emergency Reserve Charlie", locationName: "Haridwar Staging", x: 260, y: 390, capacity: 40000 }
+    ];
+
+    const shelters = state.shelters || [
+      { id: "S-012", name: "Shelter S-012 (Ganga Valley High School)", daysOfCover: 1.2, occupancy: 640, status: "critical", x: 670, y: 400 },
+      { id: "S-008", name: "Shelter S-008 (Doon Community Complex)", daysOfCover: 1.8, occupancy: 420, status: "caution", x: 220, y: 220 },
+      { id: "S-021", name: "Shelter S-021 (Shivalik Relief Camp)", daysOfCover: 3.5, occupancy: 310, status: "safe", x: 110, y: 270 }
+    ];
+
+    const hazards = state.hazards || [
+      { id: "HAZ-001", typeName: "Flash Flood & Inundation", locationName: "NH-58 Bridge 7", severity: "critical", roadBlocked: true, x: 360, y: 205 },
+      { id: "HAZ-002", typeName: "Mountain Landslide Blockage", locationName: "Chila Pass Mile 14", severity: "high", roadBlocked: false, x: 580, y: 330 }
+    ];
+
+    const convoys = state.convoys || [
+      { id: "C-014", code: "CONVOY-DELTA-14", driverName: "Rajesh Kumar", etaMinutes: 45, status: "delayed", originName: "Hub Alpha", destName: "Shelter S-012", x: 270, y: 80 },
+      { id: "C-021", code: "CONVOY-ECHO-21", driverName: "Priya Sharma", etaMinutes: 28, status: "on_route", originName: "Reserve Charlie", destName: "Shelter S-008", x: 340, y: 310 },
+      { id: "C-019", code: "CONVOY-FOXTROT-19", driverName: "Vikram Singh", etaMinutes: 62, status: "high_risk", originName: "Depot Bravo", destName: "Shelter S-014", x: 520, y: 285 }
+    ];
+
     container.innerHTML = `
-      <div style="width:100%;height:100%;min-height:440px;position:relative;background:#F0F6FC;border:1px solid #D8E4F0;border-radius:12px;overflow:hidden;font-family:var(--font-sans);">
-        <svg viewBox="0 0 800 480" style="width:100%;height:100%;display:block;background:linear-gradient(180deg, #E6F0FA 0%, #EDF4FB 100%);">
+      <div id="vector-map-canvas-container" style="width:100%;height:100%;min-height:440px;position:relative;background:#F0F6FC;border:1px solid #D8E4F0;border-radius:12px;overflow:hidden;font-family:var(--font-sans);user-select:none;">
+        
+        <!-- Live Map Telemetry Header Badge -->
+        <div style="position:absolute;top:14px;left:14px;z-index:20;background:rgba(255,255,255,0.92);backdrop-filter:blur(6px);padding:6px 14px;border-radius:8px;border:1px solid #CBD5E1;box-shadow:0 2px 6px rgba(0,0,0,0.06);display:flex;align-items:center;gap:8px;">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;box-shadow:0 0 6px #10B981;"></span>
+          <span style="font-size:12px;font-weight:700;color:#1E293B;">Sector 7 Relief Corridor (Dehradun - Rishikesh)</span>
+        </div>
+
+        <!-- Map Navigation Controls -->
+        <div style="position:absolute;bottom:14px;right:14px;z-index:20;display:flex;flex-direction:column;gap:6px;">
+          <button onclick="window.mapEngineInstance && window.mapEngineInstance.zoomMap(1.15)" style="width:34px;height:34px;background:#fff;border:1px solid #CBD5E1;border-radius:6px;font-size:18px;font-weight:700;color:#1E293B;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.08);">+</button>
+          <button onclick="window.mapEngineInstance && window.mapEngineInstance.zoomMap(0.85)" style="width:34px;height:34px;background:#fff;border:1px solid #CBD5E1;border-radius:6px;font-size:18px;font-weight:700;color:#1E293B;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.08);">−</button>
+          <button onclick="window.mapEngineInstance && window.mapEngineInstance.resetMapZoom()" style="width:34px;height:34px;background:#fff;border:1px solid #CBD5E1;border-radius:6px;font-size:13px;font-weight:700;color:#1D63ED;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.08);" title="Reset View">⟲</button>
+        </div>
+
+        <!-- SVG Visual GIS Canvas -->
+        <svg id="vector-map-svg" viewBox="0 0 800 480" style="width:100%;height:100%;display:block;cursor:grab;background:linear-gradient(180deg, #E6F0FA 0%, #EDF4FB 100%);">
+          <!-- Topographic Contour Grids -->
           <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <pattern id="vector-grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#DCE8F5" stroke-width="1"/>
             </pattern>
+            <filter id="pin-shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.25"/>
+            </filter>
           </defs>
-          <rect width="800" height="480" fill="url(#grid)" />
+          <rect width="800" height="480" fill="url(#vector-grid)" />
 
-          <!-- River Ganga Flow Vector -->
-          <path d="M 100,50 Q 250,150 400,220 T 700,450" fill="none" stroke="#BFE0FF" stroke-width="22" stroke-linecap="round" />
-          <path d="M 100,50 Q 250,150 400,220 T 700,450" fill="none" stroke="#79B8FF" stroke-width="12" stroke-linecap="round" />
+          <!-- Mountain Ridge Terrain Shadows -->
+          <path d="M 50,20 Q 200,80 350,40 T 750,70" fill="none" stroke="#D4E4F4" stroke-width="45" stroke-linecap="round" opacity="0.6"/>
+          <path d="M 300,450 Q 550,380 750,440" fill="none" stroke="#D4E4F4" stroke-width="50" stroke-linecap="round" opacity="0.6"/>
 
-          <!-- Highway NH-58 Primary Corridor (Blocked) -->
-          <path d="M 120,90 Q 280,180 440,240 T 680,410" fill="none" stroke="#EF4444" stroke-width="5" stroke-dasharray="8,6" />
-          
-          <!-- Alternative High-Mountain Bypass Route (Safe) -->
-          <path d="M 120,90 Q 220,40 380,80 T 680,410" fill="none" stroke="#10B981" stroke-width="4" />
+          <!-- River Ganga Flow Channel -->
+          <path d="M 100,50 Q 250,150 400,220 T 700,450" fill="none" stroke="#BFE0FF" stroke-width="24" stroke-linecap="round" />
+          <path d="M 100,50 Q 250,150 400,220 T 700,450" fill="none" stroke="#79B8FF" stroke-width="14" stroke-linecap="round" />
+          <text x="320" y="165" font-size="11" font-weight="700" fill="#3B82F6" opacity="0.8" transform="rotate(22, 320, 165)">~ Ganga River Basin ~</text>
 
-          <!-- Warehouses -->
-          <g transform="translate(130, 95)" cursor="pointer" onclick="window.UI && window.UI.showToast('Central Logistics Hub Alpha (50,000 Capacity)', 'blue')">
-            <circle r="18" fill="#1D63ED" stroke="#fff" stroke-width="2" />
-            <text x="0" y="5" font-size="14" text-anchor="middle" fill="#fff">📦</text>
-            <text x="0" y="28" font-size="11" font-weight="700" text-anchor="middle" fill="#1E293B">Hub Alpha</text>
+          <!-- Routes Group -->
+          <g data-layer="routes">
+            <!-- Highway NH-58 Primary Corridor (Blocked Segment) -->
+            <path d="M 130,95 Q 280,180 450,245" fill="none" stroke="#EF4444" stroke-width="6" stroke-dasharray="8,6" opacity="0.9" />
+            <path d="M 450,245 Q 560,320 670,400" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="6,6" opacity="0.8" />
+            <text x="270" y="170" font-size="11" font-weight="700" fill="#EF4444">NH-58 (BLOCKED AT BRIDGE 7)</text>
+
+            <!-- Route 9-East Mountain Ridge Bypass (Active Safe Corridor) -->
+            <path d="M 130,95 Q 230,40 400,60 T 670,400" fill="none" stroke="#10B981" stroke-width="5" opacity="0.95" />
+            <text x="350" y="45" font-size="11" font-weight="700" fill="#059669">ROUTE 9-EAST BYPASS (VERIFIED CLEAR)</text>
           </g>
 
-          <g transform="translate(450, 245)" cursor="pointer" onclick="window.UI && window.UI.showToast('Regional Depot Bravo (Rishikesh Bypass)', 'blue')">
-            <circle r="16" fill="#1D63ED" stroke="#fff" stroke-width="2" />
-            <text x="0" y="5" font-size="13" text-anchor="middle" fill="#fff">📦</text>
-            <text x="0" y="26" font-size="11" font-weight="700" text-anchor="middle" fill="#1E293B">Depot Bravo</text>
+          <!-- Warehouses Group -->
+          <g data-layer="warehouses">
+            ${warehouses.map((wh, i) => {
+              const x = wh.x || (130 + i * 160);
+              const y = wh.y || (95 + i * 110);
+              return `
+                <g transform="translate(${x}, ${y})" cursor="pointer" filter="url(#pin-shadow)" onclick="window.mapEngineInstance && window.mapEngineInstance.handleEntityClick('warehouse', ${JSON.stringify(wh).replace(/"/g, '&quot;')})">
+                  <circle r="18" fill="#1D63ED" stroke="#FFFFFF" stroke-width="2.5" />
+                  <text x="0" y="5" font-size="14" text-anchor="middle" fill="#FFFFFF">📦</text>
+                  <rect x="-45" y="24" width="90" height="18" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+                  <text x="0" y="37" font-size="10.5" font-weight="700" text-anchor="middle" fill="#1E293B">${wh.name.split('(')[0]}</text>
+                </g>
+              `;
+            }).join('')}
           </g>
 
-          <!-- Shelters -->
-          <g transform="translate(670, 400)" cursor="pointer" onclick="window.UI && window.UI.showToast('Shelter S-012 (Ganga Valley High School - 1.2 Days Cover)', 'critical')">
-            <circle r="18" fill="#DC2626" stroke="#fff" stroke-width="2" />
-            <text x="0" y="5" font-size="14" text-anchor="middle" fill="#fff">🏠</text>
-            <text x="0" y="28" font-size="11" font-weight="700" text-anchor="middle" fill="#DC2626">Shelter S-012 (Critical)</text>
+          <!-- Shelters Group -->
+          <g data-layer="shelters">
+            ${shelters.map((sh, i) => {
+              const x = sh.x || (670 - i * 180);
+              const y = sh.y || (400 - i * 90);
+              const isCrit = sh.status === 'critical' || sh.daysOfCover < 1.5;
+              const color = isCrit ? '#DC2626' : '#059669';
+              const icon = isCrit ? '🚨' : '🏠';
+              return `
+                <g transform="translate(${x}, ${y})" cursor="pointer" filter="url(#pin-shadow)" onclick="window.mapEngineInstance && window.mapEngineInstance.handleEntityClick('shelter', ${JSON.stringify(sh).replace(/"/g, '&quot;')})">
+                  <circle r="18" fill="${color}" stroke="#FFFFFF" stroke-width="2.5" />
+                  <text x="0" y="5" font-size="14" text-anchor="middle" fill="#FFFFFF">${icon}</text>
+                  <rect x="-55" y="24" width="110" height="18" rx="4" fill="#FFFFFF" stroke="${color}" stroke-width="1.5"/>
+                  <text x="0" y="37" font-size="10" font-weight="700" text-anchor="middle" fill="${color}">${sh.id} (${sh.daysOfCover}d Cover)</text>
+                </g>
+              `;
+            }).join('')}
           </g>
 
-          <!-- Hazards -->
-          <g transform="translate(360, 205)" cursor="pointer" onclick="window.UI && window.UI.showToast('Flood Hazard at Bridge 7 (NH-58 Blocked)', 'critical')">
-            <circle r="16" fill="#EF4444" stroke="#fff" stroke-width="2" />
-            <text x="0" y="5" font-size="13" text-anchor="middle" fill="#fff">🌊</text>
-            <text x="0" y="26" font-size="11" font-weight="700" text-anchor="middle" fill="#DC2626">Bridge 7 Blocked</text>
+          <!-- Hazards Group -->
+          <g data-layer="hazards">
+            ${hazards.map((hz, i) => {
+              const x = hz.x || (360 + i * 150);
+              const y = hz.y || (205 + i * 90);
+              const icon = hz.type === 'landslide' ? '⛰️' : '🌊';
+              return `
+                <g transform="translate(${x}, ${y})" cursor="pointer" filter="url(#pin-shadow)" onclick="window.mapEngineInstance && window.mapEngineInstance.handleEntityClick('hazard', ${JSON.stringify(hz).replace(/"/g, '&quot;')})">
+                  <circle r="17" fill="#EF4444" stroke="#FFFFFF" stroke-width="2.5" />
+                  <text x="0" y="5" font-size="13" text-anchor="middle" fill="#FFFFFF">${icon}</text>
+                  <rect x="-50" y="24" width="100" height="18" rx="4" fill="#FEF2F2" stroke="#EF4444" stroke-width="1"/>
+                  <text x="0" y="37" font-size="10" font-weight="700" text-anchor="middle" fill="#DC2626">${hz.roadBlocked ? '🚧 ROAD BLOCKED' : hz.typeName.slice(0, 14)}</text>
+                </g>
+              `;
+            }).join('')}
           </g>
 
-          <!-- Active Convoys -->
-          <g transform="translate(260, 75)" cursor="pointer" onclick="window.UI && window.UI.showToast('Convoy C-014 (Rajesh Kumar - On Alternate Mountain Pass)', 'safe')">
-            <circle r="17" fill="#0D9488" stroke="#fff" stroke-width="2" />
-            <text x="0" y="5" font-size="14" text-anchor="middle" fill="#fff">🚛</text>
-            <text x="0" y="27" font-size="11" font-weight="700" text-anchor="middle" fill="#0D9488">Convoy C-014</text>
+          <!-- Active Convoys Group -->
+          <g data-layer="convoys">
+            ${convoys.map((cv, i) => {
+              const x = cv.x || (270 + i * 120);
+              const y = cv.y || (80 + i * 90);
+              const isAlert = cv.status === 'delayed' || cv.status === 'high_risk';
+              const color = isAlert ? '#EA580C' : '#0D9488';
+              return `
+                <g transform="translate(${x}, ${y})" cursor="pointer" filter="url(#pin-shadow)" onclick="window.mapEngineInstance && window.mapEngineInstance.handleEntityClick('convoy', ${JSON.stringify(cv).replace(/"/g, '&quot;')})">
+                  <circle r="18" fill="${color}" stroke="#FFFFFF" stroke-width="2.5" />
+                  <text x="0" y="5" font-size="14" text-anchor="middle" fill="#FFFFFF">🚛</text>
+                  <rect x="-45" y="24" width="90" height="18" rx="4" fill="#FFFFFF" stroke="${color}" stroke-width="1.5"/>
+                  <text x="0" y="37" font-size="10" font-weight="700" text-anchor="middle" fill="${color}">${cv.code || cv.id} (ETA ${cv.etaMinutes}m)</text>
+                </g>
+              `;
+            }).join('')}
           </g>
         </svg>
 
-        <div style="position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,0.92);backdrop-filter:blur(4px);padding:6px 14px;border-radius:20px;border:1px solid #CBD5E1;display:flex;gap:12px;font-size:11.5px;font-weight:600;color:#334155;">
+        <!-- Bottom Legend Bar -->
+        <div style="position:absolute;bottom:14px;left:14px;z-index:20;background:rgba(255,255,255,0.92);backdrop-filter:blur(6px);padding:6px 14px;border-radius:20px;border:1px solid #CBD5E1;display:flex;gap:12px;font-size:11.5px;font-weight:600;color:#334155;box-shadow:0 2px 6px rgba(0,0,0,0.06);">
           <span style="color:#1D63ED;">📦 3 Warehouses</span>
           <span style="color:#0D9488;">🚛 4 Convoys</span>
           <span style="color:#DC2626;">🏠 4 Shelters</span>
           <span style="color:#EF4444;">⚠️ 1 Blocked Bridge</span>
+          <span style="color:#059669;">🟢 1 Active Bypass Route</span>
         </div>
       </div>
     `;
+
+    window.mapEngineInstance = this;
+  }
+
+  zoomMap(factor) {
+    this.currentZoom = Math.min(2.5, Math.max(0.6, this.currentZoom * factor));
+    const svg = document.getElementById('vector-map-svg');
+    if (svg) {
+      svg.style.transform = `scale(${this.currentZoom})`;
+      svg.style.transformOrigin = 'center center';
+      svg.style.transition = 'transform 0.2s ease-out';
+    }
+  }
+
+  resetMapZoom() {
+    this.currentZoom = 1.0;
+    const svg = document.getElementById('vector-map-svg');
+    if (svg) {
+      svg.style.transform = 'scale(1)';
+      svg.style.transition = 'transform 0.2s ease-out';
+    }
   }
 }
 

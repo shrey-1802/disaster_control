@@ -4,15 +4,14 @@
  * Features automatic offline fallback & JWT session management.
  */
 
+const isLocalEnv = !window.location.hostname || 
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1' || 
+  window.location.protocol === 'file:';
+
 const API_CONFIG = {
-  // In development, default to local Fastify backend port 3000.
-  // In containerized/deployed environment, allows relative path or origin.
-  baseUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000/api/v1'
-    : '/api/v1',
-  wsUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'ws://localhost:3000/ws/telemetry'
-    : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/telemetry`,
+  baseUrl: isLocalEnv ? 'http://localhost:3000/api/v1' : '/api/v1',
+  wsUrl: isLocalEnv ? 'ws://localhost:3000/ws/telemetry' : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/telemetry`,
   tokenKey: 'DISISTA_AUTH_TOKEN',
   timeoutMs: 6000
 };
