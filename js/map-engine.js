@@ -68,20 +68,41 @@ class DisasterMapEngine {
       attributionControl: false
     });
 
-    // Clean light basemap from CartoDB Voyager
-    const primaryTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // 1. Primary: TomTom Official Map Tiles (using configured key)
+    const tomtomKey = window.TOMTOM_API_KEY || 'wtWkAyb7PQqZiL4FChKZMt6fEcEkXVG5';
+    const tomtomTiles = L.tileLayer(`https://api.tomtom.com/map/1/tile/basic/main/{z}/{x}/{y}.png?key=${tomtomKey}`, {
       maxZoom: 19,
-      subdomains: 'abcd'
+      attribution: '© TomTom',
+      tileSize: 256
     });
 
-    primaryTiles.on('tileerror', () => {
-      // Fallback to standard OpenStreetMap
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-      }).addTo(this.map);
+    // 2. Secondary: CartoDB Voyager Clean Basemap
+    const cartoTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: 'abcd',
+      attribution: '© CartoDB'
     });
 
-    primaryTiles.addTo(this.map);
+    // 3. Tertiary: OpenStreetMap
+    const osmTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    });
+
+    // Attempt to load TomTom tiles, fallback to Carto/OSM if error
+    tomtomTiles.on('tileerror', () => {
+      if (!this.map.hasLayer(cartoTiles)) {
+        cartoTiles.addTo(this.map);
+      }
+    });
+
+    cartoTiles.on('tileerror', () => {
+      if (!this.map.hasLayer(osmTiles)) {
+        osmTiles.addTo(this.map);
+      }
+    });
+
+    tomtomTiles.addTo(this.map);
 
     if (this.options.showControls) {
       L.control.zoom({ position: 'bottomright' }).addTo(this.map);
