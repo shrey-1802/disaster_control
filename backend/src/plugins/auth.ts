@@ -6,8 +6,8 @@ import type { JwtPayload } from '../shared/types/index.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    authenticate(request: FastifyRequest, reply: FastifyReply): Promise<void>;
-    authorize(allowedRoles: string[]): (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    authorize: (allowedRoles: string[]) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
 

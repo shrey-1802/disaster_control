@@ -58,7 +58,8 @@ export const wsManager = new WebSocketManager();
 export async function registerWebSocketPlugin(app: FastifyInstance): Promise<void> {
   await app.register(fastifyWebsocket);
 
-  app.get('/ws/telemetry', { websocket: true }, (socket, _req) => {
+  app.get('/ws/telemetry', { websocket: true }, (connection: any, _req) => {
+    const socket = connection?.socket || connection;
     wsManager.registerClient(socket);
   });
 }

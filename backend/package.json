@@ -1,6 +1,7 @@
 {
   "name": "disista-control-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "DISISTA CONTROL — High-Throughput Disaster Relief Supply Chain & Operational Intelligence Backend",
   "main": "dist/server.js",
   "scripts": {
